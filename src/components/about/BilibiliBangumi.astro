@@ -1,0 +1,57 @@
+---
+// src/components/about/BilibiliBangumi.astro
+const uid = "3546871211494149";
+const api = `https://api.bilibili.com/x/space/bangumi/follow/list?type=1&follow_status=0&pn=1&ps=15&vmid=${uid}`;
+
+let bangumis = [];
+let errorMsg = null;
+
+try {
+  const response = await fetch(api, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+    }
+  });
+  const resData = await response.json();
+  if (resData.code === 0 && resData.data && resData.data.list) {
+    bangumis = resData.data.list;
+  } else {
+    errorMsg = `獲取失敗: Code ${resData.code}`;
+  }
+} catch (e: any) {
+  errorMsg = e.message;
+}
+---
+
+<div class="mt-4 my-6 not-prose">
+  {errorMsg ? (
+    <div class="p-8 border border-dashed border-border rounded-xl text-center text-muted-foreground bg-muted/30">
+      無法加載追番數據 ({errorMsg})
+    </div>
+  ) : bangumis.length > 0 ? (
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+      {bangumis.map((b: any) => (
+        <a href={b.url} target="_blank" rel="noopener noreferrer" class="group relative block overflow-hidden rounded-xl bg-muted transition-transform hover:-translate-y-1 duration-300 border border-border hover:border-primary/50 shadow-sm hover:shadow-md">
+          <div class="aspect-[3/4] overflow-hidden bg-muted-foreground/10">
+            {/* Convert http:// to https:// to avoid Mixed Content on origin */}
+            <img 
+              src={b.cover.replace('http://', 'https://')} 
+              alt={b.title} 
+              class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" 
+              loading="lazy" 
+              referrerpolicy="no-referrer"
+            />
+          </div>
+          <div class="absolute inset-x-0 bottom-0 flex flex-col justify-end bg-gradient-to-t from-black/90 via-black/40 to-transparent p-3 pt-8 opacity-90 transition-opacity group-hover:opacity-100">
+            <h3 class="text-xs font-bold text-white line-clamp-2 leading-tight shadow-black drop-shadow-md mb-1">{b.title}</h3>
+            <p class="text-[10px] text-zinc-300 line-clamp-1 drop-shadow-md font-medium">{b.new_ep?.index_show || '未知內容'}</p>
+          </div>
+        </a>
+      ))}
+    </div>
+  ) : (
+    <div class="p-8 border border-dashed border-border rounded-xl text-center text-muted-foreground bg-muted/30">
+      暫無追番記錄
+    </div>
+  )}
+</div>

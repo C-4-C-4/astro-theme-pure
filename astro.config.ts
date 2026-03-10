@@ -58,6 +58,10 @@ export default defineConfig({
       {
         protocol: 'https',
         hostname: 'img.cdn1.vip'
+      },
+      {
+        protocol: 'https',
+        hostname: 'raw.githubusercontent.com'
       }
     ]
   },

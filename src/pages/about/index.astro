@@ -3,12 +3,14 @@ import { Button, Collapse, Spoiler, Timeline } from 'astro-pure/user'
 import PageLayout from '@/layouts/CommonPage.astro'
 import Substats from '@/components/about/Substats.astro'
 import ToolSection from '@/components/about/ToolSection.astro'
+import BilibiliBangumi from '@/components/about/BilibiliBangumi.astro'
 
 const headings = [
   // { depth: 2, slug: 'hobbies', text: '興趣愛好' },
   { depth: 2, slug: 'tools', text: '常用工具' },
   { depth: 2, slug: 'social-networks', text: '社交網路' },
   // { depth: 2, slug: 'gossips', text: '碎碎念' },
+  { depth: 2, slug: 'bangumi', text: '最近追番' },
   { depth: 2, slug: 'about-blog', text: '關於部落格' }
 ]
 ---
@@ -192,6 +194,10 @@ const headings = [
     possit voluptatum.
   </Collapse>
   */}
+
+  <h2 id='bangumi'>最近追番</h2>
+  <p>這是我在 Bilibili 上追看的一些番劇與動畫，數據由 Bilibili API 自動實時抓取：</p>
+  <BilibiliBangumi />
 
   {/* about-blog */}
   <h2 id='about-blog'>關於部落格</h2>

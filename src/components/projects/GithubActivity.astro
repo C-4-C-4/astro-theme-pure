@@ -1,0 +1,147 @@
+---
+const GITHUB_TOKEN = import.meta.env.GITHUB_TOKEN;
+const username = Astro.props.username || "C-4-C-4";
+
+let calendar = null;
+let totalContributions = 0;
+let errorMsg = null;
+
+if (GITHUB_TOKEN) {
+  try {
+    const response = await fetch('https://api.github.com/graphql', {
+      method: 'POST',
+      headers: {
+        'Authorization': `bearer ${GITHUB_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        query: `
+          query($username: String!, $from: DateTime!, $to: DateTime!) {
+            user(login: $username) {
+              contributionsCollection(from: $from, to: $to) {
+                contributionCalendar {
+                  totalContributions
+                  weeks {
+                    contributionDays {
+                      color
+                      contributionCount
+                      date
+                    }
+                  }
+                }
+              }
+            }
+          }
+        `,
+        variables: {
+          username: username,
+          from: new Date(new Date().getFullYear(), 0, 1).toISOString(),
+          to: new Date(new Date().getFullYear(), 11, 31, 23, 59, 59).toISOString()
+        }
+      })
+    });
+    
+    const data = await response.json();
+    if (data.data?.user?.contributionsCollection?.contributionCalendar) {
+      calendar = data.data.user.contributionsCollection.contributionCalendar;
+      totalContributions = calendar.totalContributions;
+    } else if (data.errors) {
+      errorMsg = data.errors[0]?.message || "GraphQL 錯誤: 未知問題";
+    }
+  } catch (e: any) {
+    errorMsg = e.message;
+  }
+} else {
+  errorMsg = "請在 .env 文件中配置 GITHUB_TOKEN";
+}
+
+const currentYear = new Date().getFullYear();
+
+// Calculate X Axis dynamic month labels
+let monthLabels: { month: string; index: number }[] = [];
+if (calendar && calendar.weeks) {
+  let lastMonth = -1;
+  calendar.weeks.forEach((week: any, index: number) => {
+    if (week.contributionDays.length > 0) {
+      const month = new Date(week.contributionDays[0].date).getMonth();
+      if (month !== lastMonth) {
+        // Prevent label overlap if month starts too close to the beginning (e.g. index 0 and index 2)
+        if (index > 2 || lastMonth === -1) {
+          monthLabels.push({ 
+            month: new Date(week.contributionDays[0].date).toLocaleString('en-US', { month: 'short' }), 
+            index 
+          });
+        }
+        lastMonth = month;
+      }
+    }
+  });
+
+  // Ensure we display exactly 12 month labels maximum to prevent wrapping an extra month at the end of the year representation
+  while (monthLabels.length > 12) {
+    monthLabels.pop();
+  }
+}
+---
+
+<div class="my-6 w-full dark">
+  {errorMsg ? (
+    <div class="w-full text-center py-6 text-zinc-400 border border-dashed border-zinc-700/50 rounded-lg bg-[#161b22]">
+      <p class="mb-2 font-medium">無法加載 GitHub 貢獻數據</p>
+      <code class="text-xs text-red-400 font-mono bg-red-900/20 px-2 py-1 rounded inline-block mb-3">{errorMsg}</code>
+      <p class="text-xs">
+        請在項目根目錄新建 <code>.env</code>，並填寫您的令牌：<br/>
+        <code class="mt-1 block text-blue-400 bg-blue-900/20 px-2 py-1 rounded w-fit mx-auto">GITHUB_TOKEN=ghp_xxxxxxxxxxx</code>
+      </p>
+    </div>
+  ) : calendar ? (
+    <div class="w-full font-sans overflow-hidden pb-4">
+      <p class="text-lg font-medium mb-4 text-zinc-200">Github Activities:</p>
+      
+      <div class="flex items-start w-max">
+        {/* Y Axis: Days */}
+        <div class="flex flex-col text-[10px] text-zinc-500 pr-3 gap-[2px] text-right mt-[23px]">
+          <span class="h-[11px] leading-[11px] invisible">Sun</span>
+          <span class="h-[11px] leading-[11px]">Mon</span>
+          <span class="h-[11px] leading-[11px] invisible">Tue</span>
+          <span class="h-[11px] leading-[11px]">Wed</span>
+          <span class="h-[11px] leading-[11px] invisible">Thu</span>
+          <span class="h-[11px] leading-[11px]">Fri</span>
+          <span class="h-[11px] leading-[11px] invisible">Sat</span>
+        </div>
+        
+        <div class="flex flex-col relative">
+          {/* X Axis: Months */}
+          <div class="relative text-[10px] text-zinc-500 mb-2 w-full h-[15px]">
+            {monthLabels.map((label: any) => (
+              <span class="absolute" style={`left: calc(${label.index} * 13px)`}>{label.month}</span>
+            ))}
+          </div>
+
+          <div class="flex gap-[2px]">
+            {calendar.weeks.map((week: any) => (
+              <div class="grid grid-rows-7 gap-[2px]">
+                {week.contributionDays.map((day: any) => {
+                  let dateObj = new Date(day.date);
+                  let weekday = dateObj.getDay(); // 0 is Sunday, 1 is Monday, etc.
+                  let tooltipDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                  return (
+                  <div 
+                    class="w-[11px] h-[11px] rounded-[1px] relative group cursor-pointer" 
+                    style={`background-color: ${day.color === '#ebedf0' ? '#161b22' : day.color}; grid-row-start: ${weekday + 1};`}
+                  >
+                    {/* Tooltip */}
+                    <div class="absolute bottom-[20px] left-1/2 -translate-x-1/2 px-3 py-2 bg-zinc-800 border border-zinc-700/50 text-zinc-100 text-[11px] rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-[100] shadow-xl shadow-black/50">
+                      <span class="font-semibold">{day.contributionCount === 0 ? 'No' : day.contributionCount} contributions</span> on {tooltipDate}
+                      <div class="absolute top-[98%] left-1/2 -translate-x-1/2 border-[5px] border-t-zinc-800 border-transparent"></div>
+                    </div>
+                  </div>
+                )})}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  ) : null}
+</div>
