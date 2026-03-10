@@ -6,7 +6,7 @@ tags:
   - REPORT
   - Astro
   - Cloudflare
-heroImage: { src: 'https://img.scdn.io/i/693204c56ba60_1764885701.webp', alt: 'NEBULA.ICP 封面圖', color: '#1A1A1A', inferSize: true }
+heroImage: { src: 'https://img.scdn.io/i/693204c56ba60_1764885701.webp', alt: 'NEBULA.ICP 封面圖', color: '#1A1A1A', width: 1200, height: 630 }
 draft: false 
 language: '繁體中文' 
 comment: true 

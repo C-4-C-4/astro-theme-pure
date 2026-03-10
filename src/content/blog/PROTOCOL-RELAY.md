@@ -6,7 +6,7 @@ tags:
   - REPORT
   - Astro
   - React
-heroImage: { src: 'https://img.scdn.io/i/694fb64ab695c_1766831690.webp', alt: 'PROTOCOL-RELAY 封面圖', color: '#1A1A1A', inferSize: true }
+heroImage: { src: 'https://img.scdn.io/i/694fb64ab695c_1766831690.webp', alt: 'PROTOCOL-RELAY 封面圖', color: '#1A1A1A', width: 1200, height: 630 }
 draft: false 
 language: '繁體中文' 
 comment: true 

@@ -4,7 +4,7 @@ description: '一個更適合生活類的圖文博客項目，目前處於開發
 publishDate: '2025-12-11 00:00:00' 
 tags:
   - REPORT
-heroImage: { src: 'https://img.scdn.io/i/693a37695e8e2_1765422953.webp', alt: 'Nebula.Ins.Blog 封面圖', color: '#1A1A1A', inferSize: true }
+heroImage: { src: 'https://img.scdn.io/i/693a37695e8e2_1765422953.webp', alt: 'Nebula.Ins.Blog 封面圖', color: '#1A1A1A', width: 1200, height: 630 }
 draft: false 
 language: '繁體中文' 
 comment: true 

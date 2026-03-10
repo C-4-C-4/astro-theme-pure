@@ -6,7 +6,7 @@ tags:
   - REPORT
   - Next.js
   - 全棧
-heroImage: { src: 'https://img.scdn.io/i/692dcd265ba3a_1764609318.webp', alt: 'Nebula.SYS 封面圖', color: '#1A1A1A', inferSize: true }
+heroImage: { src: 'https://img.scdn.io/i/692dcd265ba3a_1764609318.webp', alt: 'Nebula.SYS 封面圖', color: '#1A1A1A', width: 1200, height: 630 }
 draft: false 
 language: '繁體中文' 
 comment: true 
