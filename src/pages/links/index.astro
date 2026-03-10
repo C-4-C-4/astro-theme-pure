@@ -5,46 +5,12 @@ import config from 'virtual:config'
 import { Collapse, Timeline } from 'astro-pure/user'
 import PageLayout from '@/layouts/CommonPage.astro'
 import FriendList from '@/components/links/FriendList.astro'
-import friendsRss from '../../data/friendsRss.json'
-import Parser from 'rss-parser'
 
 const headings = [
   { depth: 2, slug: 'common-links', text: '常用連結' },
   { depth: 2, slug: 'special-links', text: '特別連結' },
-  { depth: 2, slug: 'friend-circle', text: '朋友圈動態' },
   { depth: 2, slug: 'apply-links', text: '申請連結' }
 ]
-
-// RSS Fetch Logic
-let recentPosts: any[] = [];
-try {
-  const parser = new Parser({ timeout: 5000 });
-
-  const feedPromises = friendsRss.map(async (friend) => {
-    try {
-      const feed = await parser.parseURL(friend.feedUrl);
-      return feed.items.map((item: any) => {
-        return {
-          ...item,
-          siteName: friend.siteName,
-          author: friend.author,
-        };
-      });
-    } catch (e: any) {
-      console.error(`Failed to fetch RSS for ${friend.siteName}:`, e.message);
-      return [];
-    }
-  });
-
-  const allFeeds = await Promise.allSettled(feedPromises);
-  recentPosts = allFeeds
-    .filter(result => result.status === 'fulfilled')
-    .flatMap((result: any) => result.value)
-    .sort((a, b) => new Date(b.pubDate || b.isoDate || 0).getTime() - new Date(a.pubDate || a.isoDate || 0).getTime())
-    .slice(0, 9);
-} catch (e) {
-  console.error("RSS Parsing overall error:", e);
-}
 
 const { friends } = links
 const linksConf = config.integ.links
@@ -64,32 +30,6 @@ const linkEditPage = 'https://github.com/C-4-C-4/astro-theme-pure/blob/main/publ
   </Collapse> */}
   <h2 id='special-links'>特別連結</h2>
   <FriendList list={friends[2]} />
-
-  <h2 id='friend-circle'>朋友圈動態</h2>
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 my-6 not-prose">
-    {recentPosts.length > 0 ? (
-      recentPosts.map(post => (
-        <a href={post.link} target="_blank" rel="noopener noreferrer" class="block group no-underline transition-transform hover:-translate-y-1 duration-300">
-          <div class="bg-muted p-4 rounded-xl border border-border shadow-sm group-hover:shadow-md transition-all duration-300 h-full flex flex-col hover:border-primary/50">
-            <div class="flex items-center gap-2 mb-2 text-xs text-muted-foreground">
-              <span class="font-medium text-foreground">{post.author}</span>
-              <span class="opacity-50">@</span>
-              <span class="truncate">{post.siteName}</span>
-              <span class="ml-auto whitespace-nowrap">{new Date(post.pubDate || post.isoDate || new Date()).toLocaleDateString('zh-CN', {month: 'short', day: 'numeric'})}</span>
-            </div>
-            <h3 class="font-bold text-base mb-2 group-hover:text-primary transition-colors line-clamp-2 leading-tight">{post.title}</h3>
-            <p class="text-sm text-muted-foreground line-clamp-2 mt-auto leading-relaxed">
-                {post.contentSnippet ? post.contentSnippet : (post.content ? post.content.replace(/<[^>]+>/g, '') : '閱讀全文')}
-            </p>
-          </div>
-        </a>
-      ))
-    ) : (
-      <div class="col-span-full text-center text-muted-foreground py-8 border border-dashed border-border rounded-xl">
-        暫無最新動態
-      </div>
-    )}
-  </div>
 
   <h2 id='apply-links'>申請連結</h2>
   <p>本站資訊（點擊複製）：</p>
