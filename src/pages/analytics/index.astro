@@ -39,37 +39,36 @@ try {
     throw new Error('Missing Cloudflare API credentials in environment variables.')
   }
 
-  // Use Cloudflare GraphQL Analytics API (the old REST /analytics/dashboard is deprecated)
   const now = new Date()
   const since24h = new Date(now.getTime() - 24 * 60 * 60 * 1000)
-  // For daily groups: date strings YYYY-MM-DD
+  
   const sinceDate = since24h.toISOString().split('T')[0]
   const untilDate = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-  // For hourly timeseries: full ISO strings
+ 
   const sinceDatetime = since24h.toISOString()
   const untilDatetime = now.toISOString()
 
+  // 更新了 GraphQL 查詢以獲取精確的聚合資料、TLS 協議和安全事件
   const graphqlQuery = {
     query: `
       query {
         viewer {
           zones(filter: { zoneTag: "${zoneId}" }) {
-            daily: httpRequests1dGroups(
-              limit: 2
-              filter: { date_geq: "${sinceDate}", date_lt: "${untilDate}" }
+            totals: httpRequests1hGroups(
+              limit: 1
+              filter: { datetime_geq: "${sinceDatetime}", datetime_lt: "${untilDatetime}" }
             ) {
-              dimensions {
-                date
-              }
               sum {
                 requests
                 cachedRequests
                 bytes
                 cachedBytes
-                pageViews
-                encryptedRequests
-                encryptedBytes
               }
+            }
+            daily: httpRequests1dGroups(
+              limit: 2
+              filter: { date_geq: "${sinceDate}", date_lt: "${untilDate}" }
+            ) {
               uniq {
                 uniques
               }
@@ -88,6 +87,23 @@ try {
                 bytes
                 cachedBytes
               }
+            }
+            tls: httpRequests1hGroups(
+              limit: 20
+              filter: { datetime_geq: "${sinceDatetime}", datetime_lt: "${untilDatetime}" }
+            ) {
+              dimensions {
+                clientSSLProtocol
+              }
+              sum {
+                requests
+              }
+            }
+            firewall: firewallEventsAdaptiveGroups(
+              limit: 1
+              filter: { datetime_geq: "${sinceDatetime}", datetime_lt: "${untilDatetime}" }
+            ) {
+              count
             }
           }
         }
@@ -121,51 +137,68 @@ try {
     throw new Error(msgs || 'No zone data returned. Please verify your CLOUDFLARE_ZONE_ID is the Zone ID (not Account ID).')
   }
 
-  // Hourly timeseries (last 24h exactly — sum these for accurate totals)
-  const hourlyGroups: any[] = zoneData.hourly || []
-  timeseriesData = hourlyGroups.map((h: any) => ({
-    time: h.dimensions.datetime,
-    uncached: (h.sum.requests || 0) - (h.sum.cachedRequests || 0),
-    cached: h.sum.cachedRequests || 0
-  }))
+  // 1. 流量監控精確聚合 (不再依賴迴圈累加)
+  const totals = zoneData.totals?.[0]?.sum || { requests: 0, cachedRequests: 0, bytes: 0, cachedBytes: 0 }
+  totalRequests = totals.requests || 0
+  cachedRequests = totals.cachedRequests || 0
+  totalBandwidth = totals.bytes || 0
+  cachedBandwidth = totals.cachedBytes || 0
 
-  // Aggregate totals from hourly groups (matches Cloudflare dashboard's "last 24h" exactly)
-  for (const h of hourlyGroups) {
-    totalRequests += h.sum.requests || 0
-    cachedRequests += h.sum.cachedRequests || 0
-    totalBandwidth += h.sum.bytes || 0
-    cachedBandwidth += h.sum.cachedBytes || 0
-  }
-  uncachedRequests = totalRequests - cachedRequests
-  uncachedBandwidth = totalBandwidth - cachedBandwidth
+  uncachedRequests = Math.max(0, totalRequests - cachedRequests)
+  uncachedBandwidth = Math.max(0, totalBandwidth - cachedBandwidth)
 
-  // Unique visitors — only available in daily groups (daily approximation)
+  // 唯一訪問者 (UV)
   const dailyGroups: any[] = zoneData.daily || []
   for (const group of dailyGroups) {
     uniqueVisitors = Math.max(uniqueVisitors, group.uniq?.uniques || 0)
   }
 
-  // Security metrics (derived from totals)
-  secTotalRequests = totalRequests
-  secServeCloudflare = cachedRequests
+  // 小時趨勢圖
+  const hourlyGroups: any[] = zoneData.hourly || []
+  timeseriesData = hourlyGroups.map((h: any) => ({
+    time: h.dimensions.datetime,
+    uncached: Math.max(0, (h.sum.requests || 0) - (h.sum.cachedRequests || 0)),
+    cached: h.sum.cachedRequests || 0
+  }))
+
+  // 2. 真實的 TLS 流量分佈
+  tlsVersions = {}
+  if (zoneData.tls && zoneData.tls.length > 0) {
+    zoneData.tls.forEach((group: any) => {
+      const protocol = group.dimensions?.clientSSLProtocol || 'unknown'
+      const reqs = group.sum?.requests || 0
+      
+      let key = protocol
+      if (protocol === 'none') key = 'None (not secure)'
+      else if (protocol === 'unknown') key = 'Unknown'
+      else if (protocol.toUpperCase() === 'TLSV1.3') key = 'TLS v1.3'
+      else if (protocol.toUpperCase() === 'TLSV1.2') key = 'TLS v1.2'
+      else if (protocol.toUpperCase() === 'TLSV1.1') key = 'TLS v1.1'
+      else if (protocol.toUpperCase() === 'TLSV1.0') key = 'TLS v1.0'
+      
+      tlsVersions[key] = (tlsVersions[key] || 0) + reqs
+    })
+  } else {
+    // 若無資料的預設值
+    tlsVersions = { 'TLS v1.3': 0, 'Unknown': 0, 'None (not secure)': 0 }
+  }
+
+  // 3. 安全與每日請求數分析
+  secMitigated = zoneData.firewall?.[0]?.count || 0
+  // Cloudflare 服務包含：快取的請求 + 被 WAF 阻擋的惡意請求
+  secServeCloudflare = cachedRequests + secMitigated 
   secServeOrigin = uncachedRequests
-  secMitigated = 0 // WAF data requires separate query / Enterprise plan
+  secTotalRequests = secServeCloudflare + secServeOrigin
 
-  // HTTP version breakdown — adaptive groups not available on current plan; use placeholder
+  // 暫存：使用總數按比例粗略計算 HTTP 類型和內容類型（因免費計畫維度限制）
   httpVersions = { 'HTTP/2': cachedRequests, 'HTTP/1.1': uncachedRequests }
-
-  // Content type breakdown — use placeholder
   contentTypes = { 'html': Math.floor(totalRequests * 0.4), 'js': Math.floor(totalRequests * 0.3), 'css': Math.floor(totalRequests * 0.15), 'image': Math.floor(totalRequests * 0.15) }
-
-  // TLS breakdown
-  tlsVersions = { 'Encrypted (TLS)': totalRequests }
 
 } catch (error) {
   fetchError = (error as Error).message
   console.error('[Analytics Page] Error fetching Cloudflare data:', error)
 }
 
-// Convert bytes to readable format
 function formatBytes(bytes: number, decimals = 2) {
   if (!+bytes) return '0 Bytes'
   const k = 1024
@@ -295,12 +328,10 @@ function formatNumber(num: number) {
   <div class="text-xs text-muted-foreground mb-4">過去 24 小時</div>
   
   <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-2">
-    <!-- Total -->
     <div class="px-2 border-r border-border">
       <div class="text-sm text-muted-foreground mb-1">總計</div>
       <div class="text-3xl font-bold">{formatNumber(secTotalRequests)}</div>
     </div>
-    <!-- Mitigated -->
     <div class="px-2 border-r border-border">
       <div class="flex items-center gap-2 mb-1">
         <span class="w-2 h-2 rounded-full bg-orange-300"></span>
@@ -308,7 +339,6 @@ function formatNumber(num: number) {
       </div>
       <div class="text-3xl font-bold">{secTotalRequests > 0 ? ((secMitigated / secTotalRequests) * 100).toFixed(2) : 0}%</div>
     </div>
-    <!-- Cloudflare served -->
     <div class="px-2 border-r border-border">
       <div class="flex items-center gap-2 mb-1">
         <span class="w-2 h-2 rounded-full bg-blue-300"></span>
@@ -316,7 +346,6 @@ function formatNumber(num: number) {
       </div>
       <div class="text-3xl font-bold">{secTotalRequests > 0 ? ((secServeCloudflare / secTotalRequests) * 100).toFixed(2) : 0}%</div>
     </div>
-    <!-- Origin served -->
     <div class="px-2">
       <div class="flex items-center gap-2 mb-1">
         <span class="w-2 h-2 rounded-full bg-teal-600"></span>
@@ -418,7 +447,6 @@ function formatNumber(num: number) {
           }
         ]
       };
-
       chart.setOption(option);
 
       // Render TLS Chart
@@ -426,7 +454,6 @@ function formatNumber(num: number) {
       let tlsChart;
       if (tlsContainer && tlsVersions) {
         tlsChart = echarts.init(tlsContainer);
-        
         const tlsData = Object.keys(tlsVersions).map(k => {
            let color = '#fbbf24'; // TLS v1.3
            if (k === 'Unknown') color = '#34d399';
@@ -441,7 +468,6 @@ function formatNumber(num: number) {
               data: [tlsVersions[k]]
            };
         });
-        
         tlsChart.setOption({
           grid: { left: 0, right: 0, bottom: 0, top: 0, containLabel: false },
           xAxis: [{ type: 'value', show: false }],
@@ -475,7 +501,6 @@ function formatNumber(num: number) {
       const httpChartContainer = document.getElementById('http-version-chart');
       const bwdChartContainer = document.getElementById('bandwidth-saved-chart');
       const ctChartContainer = document.getElementById('content-type-chart');
-      
       let httpChart, bwdChart, ctChart;
       
       if (httpChartContainer) {
