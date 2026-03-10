@@ -7,7 +7,7 @@ tags:
   - Cloudflare
   - ECharts
   - Tutorial
-heroImage: { src: 'https://img.cdn1.vip/i/69afb4c2dd936_1773122754.webp', alt: 'Cloudflare Analytics Panel Tutorial', color: '#F38020', inferSize: true }
+heroImage: { src: 'https://img.cdn1.vip/i/69afb4c2dd936_1773122754.webp', alt: 'Cloudflare Analytics Panel Tutorial', color: '#F38020', width: 1200, height: 630 }
 draft: false
 language: '繁體中文'
 comment: true
