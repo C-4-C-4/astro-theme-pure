@@ -1,27 +1,27 @@
 import type { CardListData, Config, IntegrationUserConfig, ThemeUserConfig } from 'astro-pure/types'
 
 export const theme: ThemeUserConfig = {
-  // [Basic]
-  /** Title for your website. Will be used in metadata and as browser tab title. */
-  title: 'Astro Theme Pure',
-  /** Will be used in index page & copyright declaration */
-  author: 'Pure Lab',
-  /** Description metadata for your website. Can be used in page metadata. */
-  description: 'Stay hungry, stay foolish',
-  /** The default favicon for your site which should be a path to an image in the `public/` directory. */
+  // [基础配置]
+  /** 网站标题。将用于元数据（Metadata）以及浏览器标签页的标题。 */
+  title: 'CcoMm',
+  /** 作者名称。将用于首页展示和底部的版权声明。 */
+  author: 'CcoMm',
+  /** 网站描述。用于网页的元数据（可以被搜索引擎抓取）。 */
+  description: '這是C4的個人部落格網站',
+  /** 网站的默认 favicon 图标，应该填写相对于 `public/` 目录的图片路径。 */
   favicon: '/favicon/favicon.ico',
-  /** The default social card image for your site which should be a path to an image in the `public/` directory. */
+  /** 网站默认的社交分享卡片预览图，同样是相对于 `public/` 目录的图片路径。 */
   socialCard: '/images/social-card.png',
-  /** Specify the default language for this site. */
+  /** 指定本网站的默认语言。 */
   locale: {
-    lang: 'en-US',
-    attrs: 'en_US',
+    lang: 'zh-TW',
+    attrs: 'zh_TW',
     // Date locale
-    dateLocale: 'en-US',
+    dateLocale: 'zh-TW',
     dateOptions: {
-      day: 'numeric',
+      year: 'numeric',
       month: 'short',
-      year: 'numeric'
+      day: 'numeric'
     }
   },
   /** Set a logo image to show in the homepage. */
@@ -48,37 +48,23 @@ export const theme: ThemeUserConfig = {
   /** Configure the header of your site. */
   header: {
     menu: [
-      { title: 'Blog', link: '/blog' },
-      { title: 'Docs', link: '/docs' },
-      { title: 'Projects', link: '/projects' },
-      { title: 'Links', link: '/links' },
-      { title: 'About', link: '/about' }
+      { title: '部落格', link: '/blog' },
+      { title: '專案', link: '/projects' },
+      { title: '連結', link: '/links' },
+      { title: '關於', link: '/about' }
     ]
   },
 
   /** Configure the footer of your site. */
   footer: {
     // Year format
-    year: `© ${new Date().getFullYear()}`,
+    year: '© 2022 - 2026',
     // year: `© 2019 - ${new Date().getFullYear()}`,
-    links: [
-      // Registration link
-      {
-        title: 'Moe ICP 114514',
-        link: 'https://icp.gov.moe/?keyword=114514',
-        style: 'text-sm' // Uno/TW CSS class
-      },
-      // Privacy Policy link
-      {
-        title: 'Site Policy',
-        link: '/terms',
-        pos: 2 // position set to 2 will be appended to copyright line
-      }
-    ],
+    links: [],
     /** Enable displaying a “Astro & Pure theme powered” link in your site’s footer. */
-    credits: true,
+    credits: false,
     /** Optional details about the social media accounts for this site. */
-    social: { github: 'https://github.com/cworld1/astro-theme-pure' }
+    social: { github: 'https://github.com/C-4-C-4' }
   },
 
   // [Content]
@@ -114,8 +100,8 @@ export const integ: IntegrationUserConfig = {
     applyTip: [
       { name: 'Name', val: theme.title },
       { name: 'Desc', val: theme.description || 'Null' },
-      { name: 'Link', val: 'https://astro-pure.js.org/' },
-      { name: 'Avatar', val: 'https://astro-pure.js.org/favicon/favicon.ico' }
+      { name: 'Link', val: 'https://ccomm.top/' },
+      { name: 'Avatar', val: 'https://ccomm.top/favicon/favicon.ico' }
     ],
     // Cache avatars in `public/avatars/` to improve user experience.
     cacheAvatar: false
@@ -159,7 +145,7 @@ export const integ: IntegrationUserConfig = {
   },
   // Comment system
   waline: {
-    enable: true,
+    enable: false,
     // Server service link
     server: 'https://astro-theme-pure-waline.arthals.ink/',
     // Show meta info for comments

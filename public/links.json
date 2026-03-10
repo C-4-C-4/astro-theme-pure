@@ -5,16 +5,256 @@
       "desc": "Common links included in circle friends",
       "link_list": [
         {
+          "name": "禾守の小站",
+          "intro": "这里是一只萌新的博客~",
+          "link": "https://blog.dmoe.top",
+          "avatar": "https://sway-cdn.com/s/wl1r2oqIuZtCtQbJ/images/9ecO8UCSDAkWDf"
+        },
+        {
+          "name": "龙星划空",
+          "intro": "人生近看是悲剧，远看是喜剧",
+          "link": "https://blog.245179.xyz/",
+          "avatar": "https://blog.245179.xyz/images/atiq.png"
+        },
+        {
+          "name": "布丁の小窝",
+          "intro": "一个有梦想的咸鱼",
+          "link": "https://www.furryowo.top/",
+          "avatar": "https://dn-qiniu-avatar.qbox.me/avatar/7da7e82f04de94c795db0301c3397bb6?"
+        },
+        {
+          "name": "Sakitami 的集装箱",
+          "intro": "我已经无敌了！",
+          "link": "https://blog.skihome.xyz/",
+          "avatar": "https://blog.skihome.xyz/uploads/avatar.jpg"
+        },
+        {
+          "name": "XME Notes Library",
+          "intro": "你好哇~ 我是 xzadudu179，自设名九镹，是一个正在四处游荡与探索的小生物！",
+          "link": "https://blog.xzadudu179.top/",
+          "avatar": "https://avatars.githubusercontent.com/u/129601567?v=4"
+        },
+        {
+          "name": "中二病晚期の物語",
+          "intro": "一只狐狸敲出的一个奇迹",
+          "link": "https://imfurry.com/",
+          "avatar": "https://cdn-imfurry.imfurry.com/avatar/zebwqFurryAvatar.png"
+        },
+        {
+          "name": "雪萌天文台",
+          "intro": "发现巷子里的那颗星星",
+          "link": "https://blog.snowy.moe",
+          "avatar": "https://img.snowy.moe/head.png"
+        },
+        {
+          "name": "Almango' Blog",
+          "intro": "天真永不消逝，浪漫至死不渝",
+          "link": "https://blog.almango.cn/",
+          "avatar": "https://blog.almango.cn/img/favicon.png"
+        },
+        {
+          "name": "ATao-Blog",
+          "intro": "做自己喜欢的事",
+          "link": "https://blog.atao.cyou/",
+          "avatar": "https://cdn.atao.cyou/Web/Avatar.png"
+        },
+        {
+          "name": "竟何",
+          "intro": "写给你的长信",
+          "link": "https://lylelove.top",
+          "avatar": "https://s2.loli.net/2021/12/04/8pQyDdjPbmZO5rv.png"
+        },
+        {
+          "name": "柠檬星",
+          "intro": "天空就是一杯橘子味的柠檬汽水",
+          "link": "https://blog.lemonstar.me",
+          "avatar": "https://blog.lemonstar.me/img/site-icon-lemon.png"
+        },
+        {
+          "name": "AdproのBlog",
+          "intro": "Adpro的Blog，可能有有用的东西？",
+          "link": "https://blog.adproqwq.top/",
+          "avatar": "https://blog.adproqwq.top/avatar.png"
+        },
+        {
+          "name": "Chenmyの小破站",
+          "intro": "这是一只鸽子，只会咕咕叫",
+          "link": "https://www.chenmyawa.top/",
+          "avatar": "https://www.chenmyawa.top/avatar.jpg"
+        },
+        {
+          "name": "阿叶Ayeez的小站",
+          "intro": "记录学习历程，记录美好生活",
+          "link": "https://blog.Ayeez.cn",
+          "avatar": "https://blog.ayeez.cn/imgs/photo.jpg"
+        },
+        {
+          "name": "望夜菌的小窝",
+          "intro": "change and challenge!",
+          "link": "https://www.plsshenyun.top/",
+          "avatar": "https://www.plsshenyun.top/ico/ico.png"
+        },
+        {
+          "name": "XgrBlog",
+          "intro": "学无止境",
+          "link": "https://xgrblog.cn",
+          "avatar": "https://xgrblog.cn/avatar.jpg"
+        },
+        {
+          "name": "小林的小窝",
+          "intro": "分享技术教程、日常",
+          "link": "https://www.xiaorin.com",
+          "avatar": "https://www.xiaorin.com/Image.jpg"
+        },
+        {
+          "name": "鼠鼠在碎觉",
+          "intro": "我是不慎落入世界的一滴水墨",
+          "link": "https://sszsj.com/",
+          "avatar": "https://tmx.fishpi.cn/image/head.jpg"
+        },
+        {
+          "name": "老卡尔的旧纸箱",
+          "intro": "这里存着卡尔白的过去、现在和未来",
+          "link": "https://karlbaey.top",
+          "avatar": "https://avatars.githubusercontent.com/u/191684279"
+        },
+        {
+          "name": "TimochanのBlog",
+          "intro": "Let's start learning",
+          "link": "https://www.timochan.cn/",
+          "avatar": "https://www.timochan.cn/api/objects/icon/9s6tbcvax674yv2m88.jpg"
+        },
+        {
+          "name": "mccsjs",
+          "intro": "点一盏灯，等一个迷路的夜🍁🍁🍁",
+          "link": "https://seln.cn/",
+          "avatar": "https://seln.cn/img/ico.jpg"
+        },
+        {
+          "name": "Sky's Blog",
+          "intro": "山河浪漫，人间温暖",
+          "link": "https://www.wanglingyue.com",
+          "avatar": "http://cdn.wanglingyue.com/me-1.jpg"
+        },
+        {
+          "name": "裕裕裕的小破宅",
+          "intro": "你永远可以在我这里找到一座避风港",
+          "link": "https://yu-blog.top/",
+          "avatar": "https://yu-blog.top/img/avatar.jpg"
+        },
+        {
+          "name": "ANXYの小窝",
+          "intro": "记住你！自己！",
+          "link": "https://blog.anxy.top/",
+          "avatar": "https://q2.qlogo.cn/headimg_dl?dst_uin=2622979530&spec=640"
+        },
+        {
+          "name": "lveMonsiのBlog",
+          "intro": "无限摸鱼🐟",
+          "link": "https://blog.lvems.top/",
+          "avatar": "https://img.lvems.top/img/202307151450821.jpg"
+        },
+        {
+          "name": "咖啡豆子coffee的小站",
+          "intro": "所有奇迹的始发点",
+          "link": "https://blog.kfdzcoffee.cn",
+          "avatar": "https://images.kfdzcoffee.cn/i/1/avatar.png"
+        },
+        {
+          "name": "Lorraine's Blog",
+          "intro": "过去无法改变，未来可以塑造。",
+          "link": "https://blog.seeker-lorraine.cn",
+          "avatar": "https://blog.seeker-lorraine.cn/upload/favicon.webp"
+        },
+        {
+          "name": "JustPureH2O 的博客",
+          "intro": "穷方圆平直之情，尽规矩准绳之用。",
+          "link": "https://justpureh2o.cn",
+          "avatar": "https://img.justpureh2o.cn/image/667f85b1d9c307b7e9ef9f2c.jpg"
+        },
+        {
+          "name": "我鬼知道の博客",
+          "intro": "If you wanna achieve you gotta believe",
+          "link": "https://www.wgzdy.top/",
+          "avatar": "https://vercel.cdn.wgzdy.top/wp-content/uploads/avater.webp"
+        },
+        {
+          "name": "Glimmer",
+          "intro": "只有不活在他人的期待中，才可以成为更好的自己。",
+          "link": "https://i.duckxu.com",
+          "avatar": "https://media.duckxu.com/blogfiles/public/iduckxucom.webp"
+        },
+        {
+          "name": "Hinai",
+          "intro": "曇花一現",
+          "link": "https://blog.woo.moe",
+          "avatar": "https://data.woo.moe/img/ico/104491469_0_r.png"
+        },
+        {
+          "name": "小元博客",
+          "intro": "这是一个技术分享和娱乐性的网站，它们记录着我的所思所想，在这里你能看见有关前端或是一些其它乱七八糟的技术思路分享，也能看见我的一些吐槽和有趣的分享，总之很欢迎您的光顾。",
+          "link": "https://reblog.cn",
+          "avatar": "https://reblog.cn/upload/img/web-user.jpeg"
+        },
+        {
+          "name": "POETIZE",
+          "intro": "这是一个 Vue2 Vue3 与 SpringBoot 结合的产物～",
+          "link": "https://poetize.cn",
+          "avatar": "https://s1.ax1x.com/2022/11/10/z9E7X4.jpg"
+        },
+        {
           "name": "Arthals' ink",
           "intro": "所见高山远木，阔云流风；所幸岁月盈余，了无拘束",
           "link": "https://arthals.ink/",
           "avatar": "https://cdn.arthals.ink/Arthals.png"
         },
         {
-          "name": "CWorld Site",
-          "intro": "求知若愚，虚怀若谷",
-          "link": "https://cworld0.com/",
-          "avatar": "https://cravatar.cn/avatar/1ffe42aa45a6b1444a786b1f32dfa8aa?s=200"
+          "name": "JETT",
+          "intro": "暮然回首，那人却在，灯火阑珊处",
+          "link": "https://jettlin.cn",
+          "avatar": "https://api.jettlin.cn/api/files/1757467798643-user-img.png"
+        },
+        {
+          "name": "云海花瑶",
+          "intro": "白头并非雪可替,相遇已是上上签",
+          "link": "https://www.moeyao.cn/",
+          "avatar": "https://dn-qiniu-avatar.qbox.me/avatar/d00de9fbffe50946b950a3fd0cd1bfdb"
+        },
+        {
+          "name": "Elainafan's blog",
+          "intro": "只因 现在 深爱其中",
+          "link": "https://www.elainafan.one/",
+          "avatar": "https://www.elainafan.one/avatars/elainafan.jpg"
+        },
+        {
+          "name": "逐暗者的麦田",
+          "intro": "一位Java攻城狮的个人博客，主要分享编程、建站、动漫、趣闻和生活内容",
+          "link": "https://www.iasuna.com",
+          "avatar": "https://pic.shellingford.cn/i/me/logo.jpg"
+        },
+        {
+          "name": "酩酊街",
+          "intro": "Cheerful. Colorful.",
+          "link": "https://cafe.omoi.fun/",
+          "avatar": "https://cafe.omoi.fun/usr/uploads/2025/09/3262907601.jpg"
+        },
+        {
+          "name": "worable’s Blog",
+          "intro": "≡ω≡ 嗯对，一名普通的职一牲~",
+          "link": "https://worable.top/",
+          "avatar": "https://www.worable.top/upload/avatar.jpg"
+        },
+        {
+          "name": "RefactX Project",
+          "intro": "形体是简单而纯粹的，它不是完整的群体，每个形体都指向其复杂性，并最终被复杂性联系在一起。",
+          "link": "https://www.refact.cc/",
+          "avatar": "https://www.refact.cc/avatar.png"
+        },
+        {
+          "name": "天渺studio",
+          "intro": "天渺studio的小站&日常记录。",
+          "link": "https://tianmiao.site/",
+          "avatar": "https://s21.ax1x.com/2024/12/22/pAXtJat.jpg"
         }
       ]
     },

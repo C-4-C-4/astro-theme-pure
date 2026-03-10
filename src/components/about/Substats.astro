@@ -1,5 +1,5 @@
 ---
-import { type iconsType, socialLinks } from 'astro-pure/types'
+import { socialLinks, type iconsType } from 'astro-pure/types'
 import { Icon } from 'astro-pure/user'
 
 interface SubstatsItem {
@@ -64,10 +64,10 @@ await Promise.all(stats.map(fetchCount))
   }
 </div>
 <div class='mt-2 text-right text-sm'>
-  Display real-time; powered by <a
+  即時顯示；由 <a
     class='text-muted-foreground'
     href='http://github.com/spencerwooo/substats'
     target='_blank'
     rel='noopener noreferrer'>Substats</a
-  >
+  > 驅動
 </div>

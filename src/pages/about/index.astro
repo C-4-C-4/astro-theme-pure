@@ -5,28 +5,28 @@ import Substats from '@/components/about/Substats.astro'
 import ToolSection from '@/components/about/ToolSection.astro'
 
 const headings = [
-  { depth: 2, slug: 'hobbies', text: 'Hobbies' },
-  { depth: 2, slug: 'tools', text: 'Tools' },
-  { depth: 2, slug: 'social-networks', text: 'Social Networks' },
-  { depth: 2, slug: 'gossips', text: 'Gossips' },
-  { depth: 2, slug: 'about-blog', text: 'About Blog' }
+  // { depth: 2, slug: 'hobbies', text: '興趣愛好' },
+  { depth: 2, slug: 'tools', text: '常用工具' },
+  { depth: 2, slug: 'social-networks', text: '社交網路' },
+  // { depth: 2, slug: 'gossips', text: '碎碎念' },
+  { depth: 2, slug: 'about-blog', text: '關於部落格' }
 ]
 ---
 
-<PageLayout title='About' {headings} comment>
-  <p>Developer / Designer</p>
+<PageLayout title='關於' {headings} comment>
+  <p>學生 / 人工智能 & 大數據專業 ( Student / AI & Big Data Major )</p>
   <p>
-    Lorem ipsum dolor sit amet, vidit suscipit at mei. Quem denique mea id. Usu ei regione indoctum
-    dissentiunt, cu meliore fuisset mei, vel quod voluptua ne. Ex dicat impedit mel, at eum oratio
-    possit voluptatum.
+    Hi! 我叫 C4，目前就讀於某不知名大學的人工智能專業 (AI Major)。平常超愛吃肯德基的薯餅 (Hash
+    browns)，喜歡玩的遊戲是明日方舟:終末地 (Arknights: Endfield)。很高興認識你！
   </p>
   <p>
-    Motto: Stay hungry, Stay foolish. <Spoiler>这里可以夹私货，比如为什么要演奏春日影！</Spoiler>
+    用什麼方式？用什麼去對待？ <Spoiler>精卫填海</Spoiler>
   </p>
-  <Button title='Sponsor Me' class='w-fit' href='/projects#sponsorship' variant='ahead' />
+  {/* <Button title='贊助我' class='w-fit' href='/projects#sponsorship' variant='ahead' /> */}
 
-  {/* general-talk */}
-  <h2 id='hobbies'>Hobbies</h2>
+  {
+    /* general-talk 
+  <h2 id='hobbies'>興趣愛好</h2>
   <ul>
     <li>Lorem ipsum dolor sit amet, vidit suscipit at mei.</li>
     <li>
@@ -36,40 +36,55 @@ const headings = [
     <li>Ex dicat impedit mel, at eum oratio possit voluptatum.</li>
     <li>Impetus fuisset ullamcorper pri cu, his posse iisque ad, aliquam honestatis usu id.</li>
   </ul>
+  */
+  }
 
   {/* tools */}
-  <h2 id='tools'>Tools</h2>
-  <p>Current support tools as follow:</p>
+  <h2 id='tools'>常用工具</h2>
+  <p>目前我主要依賴以下工具進行開發與設計：</p>
   <ToolSection
     class='mb-5'
-    title='Design'
+    title='生產工具'
     tools={[
       {
-        name: 'Photoshop',
-        description: 'Picture Editing',
-        href: 'https://www.adobe.com/products/photoshop',
-        icon: import('@/assets/tools/photoshop.svg?raw')
+        name: 'Chrome',
+        description: 'Web Browser',
+        href: 'https://www.google.com/chrome/',
+        icon: import('@/assets/tools/chrome.svg?raw')
       },
       {
-        name: 'Illustrator',
-        description: 'Vector Drawing',
-        href: 'https://www.adobe.com/products/illustrator',
-        icon: import('@/assets/tools/illustrator.svg?raw')
+        name: 'Visual Studio Code',
+        description: 'Code Editor',
+        href: 'https://code.visualstudio.com/',
+        icon: import('@/assets/tools/vscode.svg?raw')
       },
       {
-        name: 'After Effects',
-        description: 'Motion Graphics',
-        href: 'https://www.adobe.com/products/aftereffects',
-        icon: import('@/assets/tools/aftereffects.svg?raw')
+        name: 'Trae',
+        description: 'AI IDE',
+        href: 'https://www.trae.ai',
+        icon: import('@/assets/tools/trae-color.svg?raw')
       },
       {
-        name: 'Premiere Pro',
-        description: 'Video Editing',
-        href: 'https://www.adobe.com/products/premiere',
-        icon: import('@/assets/tools/premiere.svg?raw')
+        name: 'Antigravity',
+        description: 'AI Code Assistant',
+        href: 'https://antigravity.google',
+        icon: import('@/assets/tools/antigravity-color.svg?raw')
+      },
+      {
+        name: 'Git',
+        description: 'Version Control',
+        href: 'https://git-scm.com/',
+        icon: import('@/assets/tools/github.svg?raw')
+      },
+      {
+        name: 'v2rayN',
+        description: 'Proxy Client',
+        href: 'https://github.com/2dust/v2rayN',
+        icon: import('@/assets/tools/v2rayn.svg?raw')
       }
     ]}
   />
+  {/* 
   <ToolSection
     class='mb-5'
     title='Productivity'
@@ -124,31 +139,20 @@ const headings = [
       }
     ]}
   />
+  */}
   <ToolSection
     class='mb-5'
-    title='Environment'
+    title='執行環境'
     tools={[
       {
-        name: 'Arch Linux',
-        description: 'Linux Distribution',
-        href: 'https://archlinux.org/',
-        icon: import('@/assets/tools/archlinux.svg?raw')
-      },
-      {
-        name: 'Ubuntu 24.04 LTS',
-        description: 'Linux Distribution',
-        href: 'https://ubuntu.com/',
-        icon: import('@/assets/tools/ubuntu.svg?raw')
-      },
-      {
-        name: 'MacOS Tahoe',
-        description: 'MacBook Air',
-        href: 'https://www.apple.com/macos/',
+        name: 'iOS',
+        description: 'iPhone 12',
+        href: 'https://www.apple.com/ios/',
         icon: import('@/assets/tools/apple.svg?raw')
       },
       {
         name: 'Windows 11',
-        description: 'Framework Laptop 16',
+        description: 'MSI Katana GF66',
         href: 'https://news.microsoft.com/windows11-general-availability/',
         icon: import('@/assets/tools/windows11.svg?raw')
       }
@@ -156,72 +160,83 @@ const headings = [
   />
 
   {/* social-networks */}
-  <h2 id='social-networks'>Social Networks</h2>
+  <h2 id='social-networks'>社交網路</h2>
   <p>
-    Lorem ipsum dolor sit amet, vidit suscipit at mei. Quem denique mea id. Usu ei regione indoctum
-    dissentiunt, cu meliore fuisset mei, vel quod voluptua ne.
+    歡迎在以下平臺關注我，我會不定期分享一些技術心得、生活碎片或者有意思的小發現。如果碰巧有同樣的興趣愛好，也歡迎隨時找我交流！
   </p>
   <Substats
     stats={[
       {
         platform: 'GitHub',
         icon: 'github',
-        link: 'https://github.com/cworld1',
+        link: 'https://github.com/C-4-C-4',
         text: 'followers',
-        api: 'github/cworld1'
+        api: 'github/C-4-C-4'
       },
       {
         platform: 'Telegram',
         icon: 'telegram',
         color: '#2ca5e0',
-        link: 'https://t.me/cworld0_cn',
+        link: 'https://t.me/SakuraOneNET',
         text: 'subscribers',
-        api: 'telegram/cworld0_cn'
-      },
-      {
-        platform: 'Steam',
-        icon: 'steam',
-        color: '#50769d',
-        link: 'https://steamcommunity.com/id/cworld',
-        text: 'games',
-        api: 'steamgames/76561199021278120'
+        api: 'telegram/SakuraOneNET'
       }
     ]}
   />
 
-  {/* gossips */}
-  <h2 id='gossips'>Gossips</h2>
+  {/* gossips 
+  <h2 id='gossips'>碎碎念</h2>
   <Collapse title='Lorem ipsum'>
     Lorem ipsum dolor sit amet, vidit suscipit at mei. Quem denique mea id. Usu ei regione indoctum
     dissentiunt, cu meliore fuisset mei, vel quod voluptua ne. Ex dicat impedit mel, at eum oratio
     possit voluptatum.
   </Collapse>
+  */}
 
   {/* about-blog */}
-  <h2 id='about-blog'>About Blog</h2>
-  <p>Website history:</p>
+  <h2 id='about-blog'>關於部落格</h2>
+  <p>站點歷史：</p>
   <Timeline
     events={[
       {
-        date: '2024-04-29',
-        content:
-          'Website refactored using <a href="https://astro.build/" target="_blank">Astro</a> and <a href="https://github.com/srleom/astro-theme-resume" target="_blank">Astro Theme Resume</a>'
+        date: '2026-03-11',
+        content: '註冊了新網域名稱 ccomm.top 續費便宜，以後就是部落格網域名稱了'
       },
       {
-        date: '2024-07-26',
-        content:
-          'Website abstracted as a theme and published on <a href="https://github.com/cworld1/astro-theme-pure"target="_blank">Github</a>'
+        date: '2026-03-10',
+        content: '更換部落格框架為 Astro + Astro Theme Pure'
       },
       {
-        date: '2024-07-27',
-        content: 'Began writing website docs'
+        date: '2026-03-07',
+        content: '感覺 Nebula 專案太亂了，索性放棄這個專案'
+      },
+      {
+        date: '2025-12-02',
+        content: '編寫了 Nebula 部落格專案'
+      },
+      {
+        date: '2025-12-01',
+        content: '忘記給部落格網域名稱續費，加上手底下還有其他網域名稱續費，實在無法承擔如此高昂的費用，用了免費網域名稱 996icu.eu.org'
+      },
+      {
+        date: '2025-07-18',
+        content: 'VPS 墜機，數據全無'
+      },
+      {
+        date: '2023-05-07',
+        content: '更換部落格系統為 Halo'
+      },
+      {
+        date: '2023-01-11',
+        content: '更換部落格系統為 WordPress'
+      },
+      {
+        date: '2022-07-21',
+        content: '第一次建站，用的是 Typecho，網域名稱：slbk.icu'
       }
     ]}
   />
-  <p>
-    The smooth operation and personalized customization of website also rely on the resources and
-    technical support provided by the following excellent projects/service providers:
-  </p>
+  <p>本站的平穩運行與個性化定制也離不開以下優秀開源專案/服務提供商的支援：</p>
   <ul>
     <li>Domain: <a href='#' target='_blank'>Vercel</a></li>
     <li>

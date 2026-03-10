@@ -49,7 +49,15 @@ export default defineConfig({
       // Allow improve Github activity chart
       {
         protocol: 'https',
-        hostname: '**.rshah.org'
+        hostname: 'img.scdn.io'
+      },
+      {
+        protocol: 'https',
+        hostname: 'ccomm.top'
+      },
+      {
+        protocol: 'https',
+        hostname: 'img.cdn1.vip'
       }
     ]
   },
