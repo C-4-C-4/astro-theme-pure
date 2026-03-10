@@ -15,12 +15,12 @@ comment: true
 **一个更适合生活类的图文博客项目**
 **开发中，有可能是半成品，太累了，不是很想动**
 
-![](https://img.scdn.io/i/693a37695e8e2_1765422953.webp)
+<img src="https://img.scdn.io/i/693a37695e8e2_1765422953.webp" class="zoomable" />
 
-![](https://img.scdn.io/i/693a37815118d_1765422977.webp)
+<img src="https://img.scdn.io/i/693a37815118d_1765422977.webp" class="zoomable" />
 
-![](https://img.scdn.io/i/693a375eb787d_1765422942.webp)
+<img src="https://img.scdn.io/i/693a375eb787d_1765422942.webp" class="zoomable" />
 
-![](https://img.scdn.io/i/693a3795eca92_1765422997.webp)
+<img src="https://img.scdn.io/i/693a3795eca92_1765422997.webp" class="zoomable" />
 
-![](https://img.scdn.io/i/693a37a22c574_1765423010.webp)
+<img src="https://img.scdn.io/i/693a37a22c574_1765423010.webp" class="zoomable" />
