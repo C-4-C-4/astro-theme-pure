@@ -57,8 +57,10 @@ try {
             daily: httpRequests1dGroups(
               limit: 2
               filter: { date_geq: "${sinceDate}", date_lt: "${untilDate}" }
-              orderBy: [date_ASC]
             ) {
+              dimensions {
+                date
+              }
               sum {
                 requests
                 cachedRequests
