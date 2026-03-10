@@ -46,3 +46,8 @@ a {
     color: hsl(var(--primary) / var(--un-text-opacity, 1));
   }
 }
+
+/* Hide Coffee Donation Button */
+div:has(> a[href='/projects#sponsorship']) {
+  display: none !important;
+}
