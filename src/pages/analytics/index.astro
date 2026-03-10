@@ -48,23 +48,12 @@ try {
   const sinceDatetime = since24h.toISOString()
   const untilDatetime = now.toISOString()
 
-  // 更新了 GraphQL 查詢以獲取精確的聚合資料、TLS 協議和安全事件
+  // 移除了錯誤的 limit: 1 totals 查詢，保留精細的維度查詢
   const graphqlQuery = {
     query: `
       query {
         viewer {
           zones(filter: { zoneTag: "${zoneId}" }) {
-            totals: httpRequests1hGroups(
-              limit: 1
-              filter: { datetime_geq: "${sinceDatetime}", datetime_lt: "${untilDatetime}" }
-            ) {
-              sum {
-                requests
-                cachedRequests
-                bytes
-                cachedBytes
-              }
-            }
             daily: httpRequests1dGroups(
               limit: 2
               filter: { date_geq: "${sinceDate}", date_lt: "${untilDate}" }
@@ -134,15 +123,17 @@ try {
   const zoneData = result?.data?.viewer?.zones?.[0]
   if (!zoneData) {
     const msgs = result.errors?.map((e: any) => e.message).join(', ')
-    throw new Error(msgs || 'No zone data returned. Please verify your CLOUDFLARE_ZONE_ID is the Zone ID (not Account ID).')
+    throw new Error(msgs || 'No zone data returned. Please verify your CLOUDFLARE_ZONE_ID is the Zone ID.')
   }
 
-  // 1. 流量監控精確聚合 (不再依賴迴圈累加)
-  const totals = zoneData.totals?.[0]?.sum || { requests: 0, cachedRequests: 0, bytes: 0, cachedBytes: 0 }
-  totalRequests = totals.requests || 0
-  cachedRequests = totals.cachedRequests || 0
-  totalBandwidth = totals.bytes || 0
-  cachedBandwidth = totals.cachedBytes || 0
+  // 1. 流量監控精確聚合 (恢復使用 hourly 迴圈累加，解決 0 Bytes 和 NaN% 的問題)
+  const hourlyGroups: any[] = zoneData.hourly || []
+  for (const h of hourlyGroups) {
+    totalRequests += h.sum.requests || 0
+    cachedRequests += h.sum.cachedRequests || 0
+    totalBandwidth += h.sum.bytes || 0
+    cachedBandwidth += h.sum.cachedBytes || 0
+  }
 
   uncachedRequests = Math.max(0, totalRequests - cachedRequests)
   uncachedBandwidth = Math.max(0, totalBandwidth - cachedBandwidth)
@@ -154,7 +145,6 @@ try {
   }
 
   // 小時趨勢圖
-  const hourlyGroups: any[] = zoneData.hourly || []
   timeseriesData = hourlyGroups.map((h: any) => ({
     time: h.dimensions.datetime,
     uncached: Math.max(0, (h.sum.requests || 0) - (h.sum.cachedRequests || 0)),
@@ -190,7 +180,7 @@ try {
   secServeOrigin = uncachedRequests
   secTotalRequests = secServeCloudflare + secServeOrigin
 
-  // 暫存：使用總數按比例粗略計算 HTTP 類型和內容類型（因免費計畫維度限制）
+  // 暫存：使用總數按比例粗略計算 HTTP 類型和內容類型
   httpVersions = { 'HTTP/2': cachedRequests, 'HTTP/1.1': uncachedRequests }
   contentTypes = { 'html': Math.floor(totalRequests * 0.4), 'js': Math.floor(totalRequests * 0.3), 'css': Math.floor(totalRequests * 0.15), 'image': Math.floor(totalRequests * 0.15) }
 
