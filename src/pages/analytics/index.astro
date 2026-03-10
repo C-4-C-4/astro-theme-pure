@@ -121,31 +121,35 @@ try {
     throw new Error(msgs || 'No zone data returned. Please verify your CLOUDFLARE_ZONE_ID is the Zone ID (not Account ID).')
   }
 
-  // Aggregate daily totals (may span 2 days if we're near midnight)
-  const dailyGroups: any[] = zoneData.daily || []
-  for (const group of dailyGroups) {
-    totalRequests += group.sum.requests || 0
-    cachedRequests += group.sum.cachedRequests || 0
-    totalBandwidth += group.sum.bytes || 0
-    cachedBandwidth += group.sum.cachedBytes || 0
-    uniqueVisitors = Math.max(uniqueVisitors, group.uniq?.uniques || 0)
-  }
-  uncachedRequests = totalRequests - cachedRequests
-  uncachedBandwidth = totalBandwidth - cachedBandwidth
-
-  // Security metrics (derived from totals)
-  secTotalRequests = totalRequests
-  secServeCloudflare = cachedRequests
-  secServeOrigin = uncachedRequests
-  secMitigated = 0 // WAF data requires separate query / Enterprise plan
-
-  // Hourly timeseries
+  // Hourly timeseries (last 24h exactly — sum these for accurate totals)
   const hourlyGroups: any[] = zoneData.hourly || []
   timeseriesData = hourlyGroups.map((h: any) => ({
     time: h.dimensions.datetime,
     uncached: (h.sum.requests || 0) - (h.sum.cachedRequests || 0),
     cached: h.sum.cachedRequests || 0
   }))
+
+  // Aggregate totals from hourly groups (matches Cloudflare dashboard's "last 24h" exactly)
+  for (const h of hourlyGroups) {
+    totalRequests += h.sum.requests || 0
+    cachedRequests += h.sum.cachedRequests || 0
+    totalBandwidth += h.sum.bytes || 0
+    cachedBandwidth += h.sum.cachedBytes || 0
+  }
+  uncachedRequests = totalRequests - cachedRequests
+  uncachedBandwidth = totalBandwidth - cachedBandwidth
+
+  // Unique visitors — only available in daily groups (daily approximation)
+  const dailyGroups: any[] = zoneData.daily || []
+  for (const group of dailyGroups) {
+    uniqueVisitors = Math.max(uniqueVisitors, group.uniq?.uniques || 0)
+  }
+
+  // Security metrics (derived from totals)
+  secTotalRequests = totalRequests
+  secServeCloudflare = cachedRequests
+  secServeOrigin = uncachedRequests
+  secMitigated = 0 // WAF data requires separate query / Enterprise plan
 
   // HTTP version breakdown — adaptive groups not available on current plan; use placeholder
   httpVersions = { 'HTTP/2': cachedRequests, 'HTTP/1.1': uncachedRequests }
