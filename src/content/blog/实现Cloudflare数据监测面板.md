@@ -15,10 +15,6 @@ comment: true
 
 # 構建專屬的網站數據大屏
 
-<div style="text-align: center; margin: 2rem 0;">
-  <img src="https://raw.githubusercontent.com/lobehub/lobe-icons/refs/heads/master/packages/static-png/light/cloudflare-color.png" alt="Cloudflare Icon" style="max-height: 120px; width: auto; margin: 0 auto; display: block;" />
-</div>
-
 在維護個人博客或網站時，了解網站的流量、帶寬消耗以及安全攔截情況是非常重要的。通常我們需要登錄 Cloudflare 的控制台才能看到這些數據。但是，能不能**把 Cloudflare 的數據面板直接嵌入到我們自己的網站中**呢？
 
 答案是可以的！這篇文章將詳細說明如何通過 Cloudflare 提供的 REST API 以及強大的開源圖表庫 **ECharts**，為你的 Astro 網站從零構建一個美觀、詳細且暗黑模式適配的“數據監控大屏”。
