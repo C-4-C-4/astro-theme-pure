@@ -13,12 +13,12 @@ comment: true
 # Nebula.ICP 项目
 **目前项目正在开发中**
 ###### 1、首页
-![Nebula.ICP](https://img.scdn.io/i/6931916423f22_1764856164.webp)
+<img src="https://img.scdn.io/i/6931916423f22_1764856164.webp" class="zoomable" />
 ###### 2、选号页
-![Nebula.ICP](https://img.scdn.io/i/693192028046e_1764856322.webp)
+<img src="https://img.scdn.io/i/693192028046e_1764856322.webp" class="zoomable" />
 ###### 3、展示页
-![Nebula.ICP](https://img.scdn.io/i/693191c6eaed0_1764856262.webp)
+<img src="https://img.scdn.io/i/693191c6eaed0_1764856262.webp" class="zoomable" />
 ###### 4、修改页
-![Nebula.ICP](https://img.scdn.io/i/693191e2a1801_1764856290.webp)
+<img src="https://img.scdn.io/i/693191e2a1801_1764856290.webp" class="zoomable" />
 ###### 5、后台页
-![Nebula.ICP](https://img.scdn.io/i/6931922101b7c_1764856353.webp)
+<img src="https://img.scdn.io/i/6931922101b7c_1764856353.webp" class="zoomable" />
