@@ -3,10 +3,11 @@ import PageLayout from '@/layouts/CommonPage.astro'
 import { Collapse } from 'astro-pure/user'
 
 const headings = [
-  { depth: 2, slug: 'traffic', text: '流量監控 (Traffic)' },
-  { depth: 2, slug: 'tls', text: 'TLS 流量 (TLS Traffic)' },
-  { depth: 2, slug: 'security', text: '安全性 (Security)' }
+  { depth: 2, slug: 'traffic', text: '流量監控 (Traffic)' }
 ]
+
+// 設置 12 小時 (43200秒) 的邊緣快取，避免每次載入都要等待 API
+Astro.response.headers.set('Cache-Control', 'public, max-age=43200, s-maxage=43200');
 
 // Server-side fetching
 let totalRequests = 0
@@ -16,18 +17,7 @@ let totalBandwidth = 0
 let uniqueVisitors = 0
 let cachedBandwidth = 0
 let uncachedBandwidth = 0
-let httpVersions: Record<string, number> = {}
-let contentTypes: Record<string, number> = {}
 let timeseriesData: any[] = []
-
-// TLS Stats
-let tlsVersions: Record<string, number> = {}
-
-// Security Stats
-let secTotalRequests = 0
-let secMitigated = 0
-let secServeCloudflare = 0
-let secServeOrigin = 0
 
 let fetchError = null
 
@@ -77,23 +67,8 @@ try {
                 cachedBytes
               }
             }
-            tls: httpRequests1hGroups(
-              limit: 20
-              filter: { datetime_geq: "${sinceDatetime}", datetime_lt: "${untilDatetime}" }
-            ) {
-              dimensions {
-                clientSSLProtocol
-              }
-              sum {
-                requests
-              }
-            }
-            firewall: firewallEventsAdaptiveGroups(
-              limit: 1
-              filter: { datetime_geq: "${sinceDatetime}", datetime_lt: "${untilDatetime}" }
-            ) {
-              count
-            }
+
+
           }
         }
       }
@@ -150,40 +125,6 @@ try {
     uncached: Math.max(0, (h.sum.requests || 0) - (h.sum.cachedRequests || 0)),
     cached: h.sum.cachedRequests || 0
   }))
-
-  // 2. 真實的 TLS 流量分佈
-  tlsVersions = {}
-  if (zoneData.tls && zoneData.tls.length > 0) {
-    zoneData.tls.forEach((group: any) => {
-      const protocol = group.dimensions?.clientSSLProtocol || 'unknown'
-      const reqs = group.sum?.requests || 0
-      
-      let key = protocol
-      if (protocol === 'none') key = 'None (not secure)'
-      else if (protocol === 'unknown') key = 'Unknown'
-      else if (protocol.toUpperCase() === 'TLSV1.3') key = 'TLS v1.3'
-      else if (protocol.toUpperCase() === 'TLSV1.2') key = 'TLS v1.2'
-      else if (protocol.toUpperCase() === 'TLSV1.1') key = 'TLS v1.1'
-      else if (protocol.toUpperCase() === 'TLSV1.0') key = 'TLS v1.0'
-      
-      tlsVersions[key] = (tlsVersions[key] || 0) + reqs
-    })
-  } else {
-    // 若無資料的預設值
-    tlsVersions = { 'TLS v1.3': 0, 'Unknown': 0, 'None (not secure)': 0 }
-  }
-
-  // 3. 安全與每日請求數分析
-  secMitigated = zoneData.firewall?.[0]?.count || 0
-  // Cloudflare 服務包含：快取的請求 + 被 WAF 阻擋的惡意請求
-  secServeCloudflare = cachedRequests + secMitigated 
-  secServeOrigin = uncachedRequests
-  secTotalRequests = secServeCloudflare + secServeOrigin
-
-  // 暫存：使用總數按比例粗略計算 HTTP 類型和內容類型
-  httpVersions = { 'HTTP/2': cachedRequests, 'HTTP/1.1': uncachedRequests }
-  contentTypes = { 'html': Math.floor(totalRequests * 0.4), 'js': Math.floor(totalRequests * 0.3), 'css': Math.floor(totalRequests * 0.15), 'image': Math.floor(totalRequests * 0.15) }
-
 } catch (error) {
   fetchError = (error as Error).message
   console.error('[Analytics Page] Error fetching Cloudflare data:', error)
@@ -268,90 +209,15 @@ function formatNumber(num: number) {
     </div>
   </div>
 
-  <h2 id='performance'>性能與分佈概述</h2>
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-    <div class="bg-muted p-4 rounded-xl border pie-container">
-      <div class="text-sm font-bold mb-1">使用的客戶端 HTTP 版本</div>
-      <div class="text-xs text-muted-foreground mb-2">過去 24 小時</div>
-      <div id="http-version-chart" style="width: 100%; flex-grow: 1;"></div>
-    </div>
-    <div class="bg-muted p-4 rounded-xl border pie-container">
-      <div class="text-sm font-bold mb-1">節省的帶寬</div>
-      <div class="text-xs text-muted-foreground mb-2">過去 24 小時</div>
-      <div id="bandwidth-saved-chart" style="width: 100%; flex-grow: 1;"></div>
-      <div class="text-center mt-2 text-sm font-bold">已節省 {formatBytes(cachedBandwidth)}</div>
-      <div class="text-center text-xs text-muted-foreground">{formatBytes(totalBandwidth)} 總帶寬</div>
-    </div>
-    <div class="bg-muted p-4 rounded-xl border pie-container">
-      <div class="text-sm font-bold mb-1">內容類型明細</div>
-      <div class="text-xs text-muted-foreground mb-2">過去 24 小時</div>
-      <div id="content-type-chart" style="width: 100%; flex-grow: 1;"></div>
-    </div>
-  </div>
-
   <h2 id='timeseries'>流量趨勢圖</h2>
 
   <div class="w-full bg-muted border rounded-xl p-4 mb-8">
     <div id="echarts-container" style="width: 100%; height: 400px;"></div>
   </div>
 
-  <h2 id='tls'>通過 TLS 提供的流量</h2>
-  <div class="text-xs text-muted-foreground mb-4">過去 24 小時</div>
-  
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
-    {Object.entries(tlsVersions).map(([key, value]) => (
-      <div class="px-2">
-         <div class="flex items-center gap-2 mb-1">
-           <span class="w-2 h-2 rounded-full" style={`background-color: ${key === 'Unknown' ? '#34d399' : key.includes('None') ? '#f472b6' : '#fbbf24'}`}></span>
-           <span class="text-sm font-bold">{key}</span>
-         </div>
-         <div class="text-3xl font-bold">{formatNumber(value)}</div>
-      </div>
-    ))}
-  </div>
-  
-  <div class="w-full bg-muted border rounded-xl p-4 mb-8">
-    <div id="tls-chart" style="width: 100%; height: 60px;"></div>
-  </div>
-
-  <h2 id='security'>每日請求數</h2>
-  <div class="text-xs text-muted-foreground mb-4">過去 24 小時</div>
-  
-  <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-2">
-    <div class="px-2 border-r border-border">
-      <div class="text-sm text-muted-foreground mb-1">總計</div>
-      <div class="text-3xl font-bold">{formatNumber(secTotalRequests)}</div>
-    </div>
-    <div class="px-2 border-r border-border">
-      <div class="flex items-center gap-2 mb-1">
-        <span class="w-2 h-2 rounded-full bg-orange-300"></span>
-        <span class="text-sm font-bold">已緩解</span>
-      </div>
-      <div class="text-3xl font-bold">{secTotalRequests > 0 ? ((secMitigated / secTotalRequests) * 100).toFixed(2) : 0}%</div>
-    </div>
-    <div class="px-2 border-r border-border">
-      <div class="flex items-center gap-2 mb-1">
-        <span class="w-2 h-2 rounded-full bg-blue-300"></span>
-        <span class="text-sm font-bold">由 Cloudflare 提供服務</span>
-      </div>
-      <div class="text-3xl font-bold">{secTotalRequests > 0 ? ((secServeCloudflare / secTotalRequests) * 100).toFixed(2) : 0}%</div>
-    </div>
-    <div class="px-2">
-      <div class="flex items-center gap-2 mb-1">
-        <span class="w-2 h-2 rounded-full bg-teal-600"></span>
-        <span class="text-sm font-bold">由源服務器提供服務</span>
-      </div>
-      <div class="text-3xl font-bold">{secTotalRequests > 0 ? ((secServeOrigin / secTotalRequests) * 100).toFixed(2) : 0}%</div>
-    </div>
-  </div>
-  
-  <div class="w-full bg-muted border rounded-xl p-4 mb-8">
-    <div id="sec-chart" style="width: 100%; height: 60px;"></div>
-  </div>
-
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js" is:inline></script>
   
-  <script is:inline define:vars={{ timeseriesData, tlsVersions, secMitigated, secServeCloudflare, secServeOrigin, httpVersions, contentTypes, cachedBandwidth, uncachedBandwidth, totalBandwidth }}>
+  <script is:inline define:vars={{ timeseriesData }}>
     document.addEventListener('DOMContentLoaded', () => {
       const container = document.getElementById('echarts-container');
       if (!container || !timeseriesData || timeseriesData.length === 0) return;
@@ -439,118 +305,8 @@ function formatNumber(num: number) {
       };
       chart.setOption(option);
 
-      // Render TLS Chart
-      const tlsContainer = document.getElementById('tls-chart');
-      let tlsChart;
-      if (tlsContainer && tlsVersions) {
-        tlsChart = echarts.init(tlsContainer);
-        const tlsData = Object.keys(tlsVersions).map(k => {
-           let color = '#fbbf24'; // TLS v1.3
-           if (k === 'Unknown') color = '#34d399';
-           else if (k.includes('None')) color = '#f472b6';
-           
-           return {
-              name: k,
-              type: 'bar',
-              stack: 'total',
-              silent: true,
-              itemStyle: { color: color },
-              data: [tlsVersions[k]]
-           };
-        });
-        tlsChart.setOption({
-          grid: { left: 0, right: 0, bottom: 0, top: 0, containLabel: false },
-          xAxis: [{ type: 'value', show: false }],
-          yAxis: [{ type: 'category', data: [''], show: false }],
-          series: tlsData
-        });
-      }
-
-      // Render Security Chart
-      const secContainer = document.getElementById('sec-chart');
-      let secChart;
-      if (secContainer) {
-        secChart = echarts.init(secContainer);
-        secChart.setOption({
-          grid: { left: 0, right: 0, bottom: 0, top: 0, containLabel: false },
-          xAxis: [{ type: 'value', show: false }],
-          yAxis: [{ type: 'category', data: [''], show: false }],
-          series: [
-            { name: '已緩解', type: 'bar', stack: 'total', silent: true, itemStyle: { color: '#fdba74' }, data: [secMitigated] }, // orange-300
-            { name: '由 Cloudflare 提供服務', type: 'bar', stack: 'total', silent: true, itemStyle: { color: '#93c5fd' }, data: [secServeCloudflare] }, // blue-300
-            { name: '由源服務器提供服務', type: 'bar', stack: 'total', silent: true, itemStyle: { color: '#0d9488' }, data: [secServeOrigin] } // teal-600
-          ]
-        });
-      }
-
-      // Render Pie Charts
-      const httpVersionData = Object.keys(httpVersions).map(k => ({ name: k, value: httpVersions[k] }));
-      const contentTypeData = Object.keys(contentTypes).map(k => ({ name: k, value: contentTypes[k] }));
-      const savedPercent = totalBandwidth > 0 ? ((cachedBandwidth / totalBandwidth) * 100).toFixed(0) : 0;
-      
-      const httpChartContainer = document.getElementById('http-version-chart');
-      const bwdChartContainer = document.getElementById('bandwidth-saved-chart');
-      const ctChartContainer = document.getElementById('content-type-chart');
-      let httpChart, bwdChart, ctChart;
-      
-      if (httpChartContainer) {
-        httpChart = echarts.init(httpChartContainer);
-        httpChart.setOption({
-          tooltip: { trigger: 'item' },
-          series: [{
-            type: 'pie',
-            radius: '70%',
-            data: httpVersionData,
-            label: { show: false },
-            emphasis: { itemStyle: { shadowBlur: 10, shadowOffsetX: 0, shadowColor: 'rgba(0, 0, 0, 0.5)' } }
-          }]
-        });
-      }
-
-      if (bwdChartContainer) {
-        bwdChart = echarts.init(bwdChartContainer);
-        bwdChart.setOption({
-          tooltip: { trigger: 'item' },
-          title: {
-            text: `${savedPercent}%`,
-            left: 'center',
-            top: 'center',
-            textStyle: { color: textColor, fontSize: 24 }
-          },
-          series: [{
-            type: 'pie',
-            radius: ['55%', '70%'],
-            avoidLabelOverlap: false,
-            label: { show: false },
-            data: [
-               { value: cachedBandwidth, name: '已節省', itemStyle: { color: '#10b981' } },
-               { value: uncachedBandwidth, name: '未節省', itemStyle: { color: '#4b5563' } }
-            ]
-          }]
-        });
-      }
-
-      if (ctChartContainer) {
-        ctChart = echarts.init(ctChartContainer);
-        ctChart.setOption({
-          tooltip: { trigger: 'item' },
-          series: [{
-            type: 'pie',
-            radius: '70%',
-            data: contentTypeData,
-            label: { show: false },
-            emphasis: { itemStyle: { shadowBlur: 10, shadowOffsetX: 0, shadowColor: 'rgba(0, 0, 0, 0.5)' } }
-          }]
-        });
-      }
-
       window.addEventListener('resize', () => {
         chart.resize();
-        if(tlsChart) tlsChart.resize();
-        if(secChart) secChart.resize();
-        if(httpChart) httpChart.resize();
-        if(bwdChart) bwdChart.resize();
-        if(ctChart) ctChart.resize();
       });
 
       // Handle Theme Toggle
@@ -565,9 +321,6 @@ function formatNumber(num: number) {
           yAxis: [{ axisLabel: { color: newTextColor }, splitLine: { lineStyle: { color: newSplitColor } }, axisLine: { lineStyle: { color: newSplitColor } } }]
         });
         
-        if(bwdChart) {
-           bwdChart.setOption({ title: { textStyle: { color: newTextColor } } });
-        }
       });
       observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
     });

@@ -58,48 +58,77 @@ CLOUDFLARE_API_TOKEN=你的_只讀_API_Token
 
 ### 1. 後端數據請求 (Server-side)
 
+早期許多人習慣使用 Cloudflare 的 `/analytics/dashboard` REST API，但該接口目前已被 Cloudflare **官方廢棄**，在較新的 Zone 或套餐中會直接返回 404 錯誤。因此，我們必須使用全新的 **Cloudflare GraphQL Analytics API** 來獲取數據。
+
 在 Astro 文件的 Frontmatter (`---` 之間) 區域，我們編寫 Node.js 執行代碼：
 
 ```astro
 ---
-// 引入你的頁面佈局組件
 import PageLayout from '@/layouts/CommonPage.astro'
 
 // 1. 定義數據變量
 let totalRequests = 0, cachedRequests = 0, uncachedRequests = 0;
 let totalBandwidth = 0, cachedBandwidth = 0, uncachedBandwidth = 0;
 let timeseriesData = [];
-// ... 其他 HTTP 和安全相關變量
 
-// 2. 嘗試獲取變數庫並請求 Cloudflare 接口
+// 2. 構建時間範圍與 GraphQL 查詢語句
 try {
-  const zoneId = import.meta.env.CLOUDFLARE_ZONE_ID;
-  const apiToken = import.meta.env.CLOUDFLARE_API_TOKEN;
+  const zoneId = (import.meta.env.CLOUDFLARE_ZONE_ID || '').trim();
+  const apiToken = (import.meta.env.CLOUDFLARE_API_TOKEN || '').trim();
 
-  // 使用 since=-1440 獲取過去 24 小時的數據
-  const response = await fetch(
-    `https://api.cloudflare.com/client/v4/zones/${zoneId}/analytics/dashboard?since=-1440`,
-    {
-      headers: {
-        Authorization: `Bearer ${apiToken}`,
-        'Content-Type': 'application/json'
+  // 計算過去 24 小時的時間範圍
+  const now = new Date();
+  const since24h = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+  const sinceDatetime = since24h.toISOString();
+  const untilDatetime = now.toISOString();
+
+  // 通過 GraphQL 的 httpRequests1hGroups 獲取精確的逐時數據
+  const graphqlQuery = {
+    query: `
+      query {
+        viewer {
+          zones(filter: { zoneTag: "${zoneId}" }) {
+            hourly: httpRequests1hGroups(
+              limit: 24
+              filter: { datetime_geq: "${sinceDatetime}", datetime_lt: "${untilDatetime}" }
+              orderBy: [datetime_ASC]
+            ) {
+              dimensions { datetime }
+              sum { requests, cachedRequests, bytes, cachedBytes }
+            }
+          }
+        }
       }
-    }
-  );
+    `
+  };
+
+  const response = await fetch('https://api.cloudflare.com/client/v4/graphql', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiToken}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(graphqlQuery)
+  });
 
   const result = await response.json();
-  if (result.success && result.result) {
-    const data = result.result;
-    
-    // 解析返回的 JSON 並賦值給我們的變量
-    totalRequests = data.totals.requests.all;
-    totalBandwidth = data.totals.bandwidth.all;
-    timeseriesData = data.timeseries.map(ts => ({
-      time: ts.since,
-      uncached: ts.requests.uncached,
-      cached: ts.requests.cached
+  const zoneData = result?.data?.viewer?.zones?.[0];
+
+  if (zoneData) {
+    // 解析返回的 JSON 並精確累加最近 24 小時的總和
+    const hourlyGroups = zoneData.hourly || [];
+    timeseriesData = hourlyGroups.map(h => ({
+      time: h.dimensions.datetime,
+      uncached: (h.sum.requests || 0) - (h.sum.cachedRequests || 0),
+      cached: h.sum.cachedRequests || 0
     }));
-    // ... 處理其他你需要展示的字段
+
+    for (const h of hourlyGroups) {
+      totalRequests += h.sum.requests || 0;
+      cachedRequests += h.sum.cachedRequests || 0;
+      totalBandwidth += h.sum.bytes || 0;
+      cachedBandwidth += h.sum.cachedBytes || 0;
+    }
   }
 } catch (error) {
   console.error('獲取數據失敗:', error);
