@@ -36,12 +36,15 @@ export const theme: ThemeUserConfig = {
 
   // Still in test
   head: [
-    /* Telegram channel */
-    // {
-    //   tag: 'meta',
-    //   attrs: { name: 'telegram:channel', content: '@cworld0_cn' },
-    //   content: ''
-    // }
+    {
+      tag: 'script',
+      attrs: {
+        defer: true,
+        src: 'https://cloud.umami.is/script.js',
+        'data-website-id': '1a799544-e74d-40cd-98c9-640024d88d61'
+      },
+      content: ''
+    }
   ],
   customCss: [],
 

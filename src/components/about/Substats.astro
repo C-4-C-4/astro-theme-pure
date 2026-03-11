@@ -20,8 +20,10 @@ const { stats } = Astro.props as Props
 
 async function fetchCount(item: SubstatsItem) {
   if (!item.api) return
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 2500)
   try {
-    const response = await fetch(`https://api.swo.moe/stats/${item.api}`)
+    const response = await fetch(`https://api.swo.moe/stats/${item.api}`, { signal: controller.signal })
     const data = await response.json()
     if (data.failed) {
       throw new Error(data.message)
@@ -30,6 +32,8 @@ async function fetchCount(item: SubstatsItem) {
     }
   } catch (error) {
     console.error(`Error in Substats fetching: ${error}`)
+  } finally {
+    clearTimeout(timeoutId)
   }
 }
 

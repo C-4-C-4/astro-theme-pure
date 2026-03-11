@@ -13,6 +13,9 @@ const headings = [
   { depth: 2, slug: 'bangumi', text: '最近追番' },
   { depth: 2, slug: 'about-blog', text: '關於部落格' }
 ]
+
+// 設置 1 小時的快取，避免每次載入都要等待外部 API
+Astro.response.headers.set('Cache-Control', 'public, max-age=3600, s-maxage=3600')
 ---
 
 <PageLayout title='關於' {headings} comment>

@@ -6,11 +6,15 @@ const api = `https://api.bilibili.com/x/space/bangumi/follow/list?type=1&follow_
 let bangumis = [];
 let errorMsg = null;
 
+const controller = new AbortController();
+const timeoutId = setTimeout(() => controller.abort(), 2500);
+
 try {
   const response = await fetch(api, {
     headers: {
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-    }
+    },
+    signal: controller.signal
   });
   const resData = await response.json();
   if (resData.code === 0 && resData.data && resData.data.list) {
@@ -19,7 +23,9 @@ try {
     errorMsg = `獲取失敗: Code ${resData.code}`;
   }
 } catch (e: any) {
-  errorMsg = e.message;
+  errorMsg = e.name === 'AbortError' ? '請求超時 (Timeout)' : e.message;
+} finally {
+  clearTimeout(timeoutId);
 }
 ---
 
