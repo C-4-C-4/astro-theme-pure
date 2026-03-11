@@ -147,23 +147,20 @@ export const integ: IntegrationUserConfig = {
   // Comment system
   waline: {
     enable: false,
-    // Server service link
-    server: 'https://astro-theme-pure-waline.arthals.ink/',
-    // Show meta info for comments
-    showMeta: false,
-    // Refer https://waline.js.org/en/guide/features/emoji.html
-    emoji: ['bmoji', 'weibo'],
-    // Refer https://waline.js.org/en/reference/client/props.html
-    additionalConfigs: {
-      // search: false,
-      pageview: true,
-      comment: true,
-      locale: {
-        reaction0: 'Like',
-        placeholder: 'Welcome to comment. (Email to receive replies. Login is unnecessary)'
-      },
-      imageUploader: false
-    }
+    server: ''
+  },
+  // @ts-ignore
+  giscus: {
+    repo: 'C-4-C-4/astro-theme-pure',
+    repoId: 'R_kgDORhtAGw',
+    category: 'Announcements',
+    categoryId: 'DIC_kwDORhtAG84C4LWV',
+    mapping: 'pathname',
+    strict: '0',
+    reactionsEnabled: '1',
+    emitMetadata: '0',
+    inputPosition: 'bottom',
+    lang: 'zh-CN'
   }
 }
 

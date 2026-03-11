@@ -181,7 +181,7 @@ try {
   </div>
 
   <!-- 在客戶端引入 ECharts 並注入我們在 SSR 掛載好的變數數據 -->
-  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js" is:inline></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js" is:inline></script>
   <script is:inline define:vars={{ timeseriesData, tlsVersions, secMitigated, secServeCloudflare, secServeOrigin }}>
     // ECharts 的圖表初始化與適配器 (chart.setOption 等邏輯)
   </script>

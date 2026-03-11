@@ -1,0 +1,56 @@
+---
+const { class: className } = Astro.props
+import { cn } from 'astro-pure/utils'
+import { integ } from '../../site.config'
+
+const giscus = (integ as any).giscus
+const show = giscus && giscus.enable !== false
+---
+
+{show && (
+  <>
+    <div id='giscus-container' class={cn('not-prose', className)} />
+    <script is:inline define:vars={{ giscus }}>
+      function loadGiscus() {
+        const container = document.getElementById('giscus-container')
+        if (!container) return
+        
+        container.innerHTML = '' // Clear existing
+        const script = document.createElement('script')
+        script.src = 'https://giscus.app/client.js'
+        script.setAttribute('data-repo', giscus.repo)
+        script.setAttribute('data-repo-id', giscus.repoId)
+        script.setAttribute('data-category', giscus.category)
+        script.setAttribute('data-category-id', giscus.categoryId)
+        script.setAttribute('data-mapping', giscus.mapping || 'pathname')
+        script.setAttribute('data-strict', giscus.strict || '0')
+        script.setAttribute('data-reactions-enabled', giscus.reactionsEnabled || '1')
+        script.setAttribute('data-emit-metadata', giscus.emitMetadata || '0')
+        script.setAttribute('data-input-position', giscus.inputPosition || 'bottom')
+        script.setAttribute('data-lang', giscus.lang || 'zh-CN')
+        script.setAttribute('crossorigin', 'anonymous')
+        script.async = true
+        
+        const isDark = document.documentElement.classList.contains('dark')
+        script.setAttribute('data-theme', isDark ? 'transparent_dark' : 'light')
+        
+        container.appendChild(script)
+      }
+
+      loadGiscus()
+      document.addEventListener('astro:page-load', loadGiscus)
+
+      // Listen for theme changes (html class mutation)
+      const observer = new MutationObserver(() => {
+        const iframe = document.querySelector('iframe.giscus-frame')
+        if (!iframe) return
+        const isDark = document.documentElement.classList.contains('dark')
+        iframe.contentWindow.postMessage(
+          { giscus: { setConfig: { theme: isDark ? 'transparent_dark' : 'light' } } },
+          'https://giscus.app'
+        )
+      })
+      observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
+    </script>
+  </>
+)}
