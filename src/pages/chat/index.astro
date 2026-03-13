@@ -1,0 +1,421 @@
+---
+import PageLayout from '@/layouts/CommonPage.astro'
+
+// 防止边缘缓存，确保动态交互实时响应
+Astro.response.headers.set('Cache-Control', 'public, max-age=0, must-revalidate')
+---
+
+<PageLayout title="AI 對話">
+  <div class="mb-4 text-sm text-muted-foreground bg-muted/30 p-4 rounded-xl border border-border">
+    <div class="font-medium text-foreground mb-1 flex items-center gap-2">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+      融合模型使用注意事項
+    </div>
+    <ul class="list-disc pl-5 space-y-1">
+      <li>本對話由高性能融合模型提供支持，對話紀錄會保留 12 小時（僅限本地瀏覽器）。</li>
+      <li>AI 生成的內容可能有誤或存在幻覺，請自行核實重要資訊。</li>
+      <li>為保護個人隱私，請勿在對話中輸入真實姓名、密碼或敏感個人資料。</li>
+    </ul>
+  </div>
+
+  <div class="chat-container flex flex-col h-[calc(100vh-280px)] min-h-[500px] rounded-xl shadow-sm overflow-hidden mb-8" style="background-color: #0e0e11;">
+    <!-- 工具栏 -->
+    <div class="flex items-center justify-between p-3 border-b border-[#18181A]">
+      <div class="text-sm font-medium text-zinc-500 pl-2 select-none flex items-center gap-1.5">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-zinc-600"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+        融合模型
+      </div>
+      <button id="chat-clear" class="text-xs flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-zinc-400 hover:bg-[#18181A] hover:text-zinc-200 transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+        清空對話記錄
+      </button>
+    </div>
+
+    <!-- 聊天记录展示区 -->
+    <div id="chat-messages" class="flex-1 overflow-y-auto p-4 sm:p-6 flex flex-col gap-6">
+      <!-- 內容將由 JS 動態渲染 -->
+    </div>
+    
+    <!-- 输入发送区 -->
+    <div class="p-4 bg-[#0e0e11] border-t border-[#18181A]">
+      <form id="chat-form" class="flex gap-3 relative max-w-4xl mx-auto">
+        <input 
+          type="text" 
+          id="chat-input"
+          class="flex-1 bg-[#18181A] text-zinc-200 px-5 py-3.5 rounded-xl text-sm border-none focus:outline-none focus:ring-1 focus:ring-[#52b1da]/50 transition-colors placeholder:text-zinc-500"
+          placeholder="輸入訊息，與 AI 展開對話..." 
+          autocomplete="off"
+          required
+        />
+        <button 
+          type="button" 
+          id="chat-stop"
+          style="display: none;"
+          class="bg-zinc-800 text-zinc-300 px-6 py-3.5 rounded-xl text-sm font-medium transition-transform active:scale-95 items-center justify-center gap-2 min-w-[100px] border border-zinc-700 hover:bg-zinc-700"
+        >
+          <!-- 正在旋转的小圆圈 -->
+          <svg class="custom-spin -ml-2 mr-1 h-4 w-4 text-zinc-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          <span class="mr-1">停止</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12"></rect></svg>
+        </button>
+        <button 
+          type="submit" 
+          id="chat-submit"
+          class="bg-[#bfebfd] text-[#52b1da] px-6 py-3.5 rounded-xl text-sm font-medium transition-transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 min-w-[100px]"
+        >
+          <span>發送</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 自定义弹窗 Modal -->
+  <div id="clear-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 opacity-0 pointer-events-none transition-opacity duration-200 backdrop-blur-sm">
+    <div class="bg-[#18181A] border border-zinc-800 rounded-xl max-w-sm w-full mx-4 overflow-hidden shadow-2xl transform scale-95 transition-transform duration-200" id="clear-modal-content">
+      <div class="p-6">
+        <h3 class="text-lg font-medium text-white mb-2">確認清空對話？</h3>
+        <p class="text-sm text-zinc-400">系統將移除您與 AI 的歷史對話紀錄，且無法恢復。繼續執行嗎？</p>
+      </div>
+      <div class="px-6 py-4 bg-[#0e0e11] flex justify-end gap-3 border-t border-zinc-800">
+        <button id="modal-cancel-btn" class="px-4 py-2 rounded-lg text-sm font-medium text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors">取消</button>
+        <button id="modal-confirm-btn" class="px-4 py-2 rounded-lg text-sm font-medium bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-colors">確認清空</button>
+      </div>
+    </div>
+  </div>
+</PageLayout>
+
+<!-- 使用 unpkg 提供的 marked 渲染 markdown 到对话气泡中 -->
+<script is:inline src="https://unpkg.com/marked@12.0.1/marked.min.js"></script>
+<script is:inline>
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('chat-form')
+  const input = document.getElementById('chat-input')
+  const submitBtn = document.getElementById('chat-submit')
+  const stopBtn = document.getElementById('chat-stop')
+  const messagesContainer = document.getElementById('chat-messages')
+  const clearBtn = document.getElementById('chat-clear')
+  
+  const CACHE_KEY = 'ccomm_chat_history'
+  const CACHE_TIME_KEY = 'ccomm_chat_time'
+  const TTL_HOURS = 12
+  
+  let messageHistory = []
+  let currentAbortController = null
+
+  // 初始化與載入歷史
+  function initChat() {
+    const savedTime = localStorage.getItem(CACHE_TIME_KEY)
+    const now = Date.now()
+    
+    // 檢查是否過期 (12小時)
+    if (savedTime && (now - parseInt(savedTime)) < TTL_HOURS * 60 * 60 * 1000) {
+      try {
+        const savedHistory = JSON.parse(localStorage.getItem(CACHE_KEY))
+        if (Array.isArray(savedHistory) && savedHistory.length > 0) {
+          messageHistory = savedHistory
+          renderAllMessages()
+          return
+        }
+      } catch (e) {
+        console.error('Failed to parse chat history', e)
+      }
+    }
+    
+    // 如果沒有歷史或歷史過期，顯示歡迎語
+    clearChat(false)
+  }
+
+  // 保存到 LocalStorage
+  function saveHistory() {
+    localStorage.setItem(CACHE_KEY, JSON.stringify(messageHistory))
+    localStorage.setItem(CACHE_TIME_KEY, Date.now().toString())
+  }
+
+  // 清空對話
+  function clearChat(updateStorage = true) {
+    messageHistory = []
+    if (updateStorage) {
+      localStorage.removeItem(CACHE_KEY)
+      localStorage.removeItem(CACHE_TIME_KEY)
+    }
+    messagesContainer.innerHTML = ''
+    renderGreeting()
+  }
+
+  // 渲染內置打招呼
+  function renderGreeting() {
+    addMessageToUI('assistant', '你好！我是基於融合模型構建的 AI 分身。請問今天有什麼我可以幫忙的？', false)
+  }
+
+  // 渲染所有歷史訊息
+  function renderAllMessages() {
+    messagesContainer.innerHTML = ''
+    renderGreeting() // 始終顯示歡迎語，但不參與上下文
+    messageHistory.forEach((msg, index) => {
+      addMessageToUI(msg.role, msg.content, false, index)
+    })
+    
+    // 初始化載入或編輯後，自動滾動到最底部
+    requestAnimationFrame(() => {
+      messagesContainer.scrollTop = messagesContainer.scrollHeight
+    })
+  }
+
+  // 添加氣泡到 UI 函數
+  function addMessageToUI(role, content, animate = true, historyIndex = -1) {
+    const isUser = role === 'user'
+    const wrapper = document.createElement('div')
+    wrapper.className = `flex gap-3 sm:gap-4 ${isUser ? 'flex-row-reverse' : ''} relative group`
+    
+    // 生成头像
+    const avatar = document.createElement('div')
+    if (isUser) {
+      avatar.className = `w-10 h-10 rounded-full flex items-center justify-center font-bold shrink-0 text-xs sm:text-sm bg-zinc-800 text-white`
+      avatar.textContent = 'ME'
+    } else {
+      avatar.className = `w-10 h-10 rounded-full bg-[#bfebfd] flex items-center justify-center text-sm text-[#52b1da] font-bold shrink-0`
+      avatar.textContent = 'AI'
+    }
+    
+    // 生成气泡盒子
+    const bubbleWrapper = document.createElement('div')
+    bubbleWrapper.className = `max-w-[85%] sm:max-w-[75%] px-5 py-3.5 rounded-2xl text-sm sm:text-base break-words ${
+      isUser 
+        ? 'bg-[#bfebfd] text-zinc-900 rounded-tr-sm' 
+        : 'bg-[#18181A] text-zinc-200 rounded-tl-sm prose prose-sm sm:prose-base prose-invert prose-p:leading-relaxed prose-pre:p-3 prose-pre:rounded-xl prose-pre:bg-[#0e0e11] prose-pre:border prose-pre:border-zinc-800'
+    }`
+    
+    if (isUser) {
+      bubbleWrapper.textContent = content
+    } else {
+      bubbleWrapper.innerHTML = content ? marked.parse(content) : `
+        <div class="flex flex-col -mt-1 -mb-1">
+          <span class="flex items-center gap-1.5 h-6 px-1">
+            <span class="w-1.5 h-1.5 bg-zinc-400 rounded-full inline-block dot-anim dot-anim-1"></span>
+            <span class="w-1.5 h-1.5 bg-zinc-400 rounded-full inline-block dot-anim dot-anim-2"></span>
+            <span class="w-1.5 h-1.5 bg-zinc-400 rounded-full inline-block dot-anim dot-anim-3"></span>
+          </span>
+          <span class="text-[11px] text-zinc-500 font-medium pl-1 mt-0.5 tracking-wider">正在思考...</span>
+        </div>`
+    }
+    
+    wrapper.appendChild(avatar)
+    wrapper.appendChild(bubbleWrapper)
+    
+    // 如果是使用者發送的消息，增加「編輯並重新發送」按鈕
+    if (isUser && historyIndex !== -1) {
+      const editBtn = document.createElement('button')
+      editBtn.className = 'opacity-0 group-hover:opacity-100 transition-opacity p-2 text-zinc-500 hover:text-zinc-300 self-center'
+      editBtn.title = '編輯並重新發送'
+      editBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>'
+      editBtn.onclick = () => {
+        if (currentAbortController) currentAbortController.abort()
+        // 截斷歷史記錄
+        messageHistory = messageHistory.slice(0, historyIndex)
+        saveHistory()
+        renderAllMessages()
+        // 將文字塞回輸入框
+        input.value = content
+        input.focus()
+      }
+      wrapper.appendChild(editBtn)
+    }
+
+    messagesContainer.appendChild(wrapper)
+    
+    // 到底部
+    if (animate) {
+      requestAnimationFrame(() => {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight
+      })
+    }
+    
+    return bubbleWrapper
+  }
+
+  // 自定义弹窗控制逻辑
+  const modal = document.getElementById('clear-modal')
+  const modalContent = document.getElementById('clear-modal-content')
+  const confirmBtn = document.getElementById('modal-confirm-btn')
+  const cancelBtn = document.getElementById('modal-cancel-btn')
+
+  function openModal() {
+    modal.classList.remove('opacity-0', 'pointer-events-none')
+    setTimeout(() => modalContent.classList.remove('scale-95'), 10)
+  }
+
+  function closeModal() {
+    modalContent.classList.add('scale-95')
+    setTimeout(() => modal.classList.add('opacity-0', 'pointer-events-none'), 150)
+  }
+
+  clearBtn.addEventListener('click', openModal)
+  cancelBtn.addEventListener('click', closeModal)
+  
+  // 點擊背景關閉
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal()
+  })
+
+  // 確認清空
+  confirmBtn.addEventListener('click', () => {
+    if (currentAbortController) currentAbortController.abort()
+    clearChat(true)
+    closeModal()
+  })
+  
+  // 停止生成
+  stopBtn.addEventListener('click', () => {
+    if (currentAbortController) {
+      currentAbortController.abort()
+    }
+  })
+
+  // 封裝切換發送/生成狀態的介面更新邏輯
+  function setGenerating(isGenerating) {
+    if (isGenerating) {
+      input.disabled = true
+      submitBtn.style.display = 'none'
+      stopBtn.style.display = 'flex'
+    } else {
+      input.disabled = false
+      stopBtn.style.display = 'none'
+      submitBtn.style.display = 'flex'
+      setTimeout(() => input.focus(), 10)
+    }
+  }
+
+  // 表单发送监听
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault()
+    const text = input.value.trim()
+    if (!text) return
+    
+    // UI 锁态
+    input.value = ''
+    setGenerating(true)
+    
+    const currentIndex = messageHistory.length
+    // 用户气泡上屏
+    addMessageToUI('user', text, true, currentIndex)
+    messageHistory.push({ role: 'user', content: text })
+    saveHistory()
+    
+    // AI 占位气泡上屏
+    const aiBubble = addMessageToUI('assistant', '', true, messageHistory.length)
+    
+    currentAbortController = new AbortController()
+    
+    try {
+      // 发出带有全程对话的 SSR 代理请求
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: messageHistory }),
+        signal: currentAbortController.signal
+      })
+      
+      if (!response.ok) {
+        throw new Error(`伺服器或大模型請求失敗 (${response.status})`)
+      }
+      
+      const reader = response.body.getReader()
+      const decoder = new TextDecoder('utf-8')
+      let aiFullResponse = ''
+      
+      // 流式读取 SSE
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        
+        const chunk = decoder.decode(value, { stream: true })
+        const lines = chunk.split('\n')
+        
+        for (const line of lines) {
+          if (line.startsWith('data: ') && line !== 'data: [DONE]') {
+            try {
+              const data = JSON.parse(line.slice(6))
+              const delta = data.choices[0]?.delta?.content || ''
+              aiFullResponse += delta
+              
+              // 实时解析输出大模型生成的 Markdown
+              aiBubble.innerHTML = marked.parse(aiFullResponse)
+              // 自动滚动到底部
+              messagesContainer.scrollTop = messagesContainer.scrollHeight
+            } catch (err) {
+              // 忽略解析殘缺 JSON 段落帶來的錯誤
+            }
+          }
+        }
+      }
+      
+      // 保存完整回复
+      messageHistory.push({ role: 'assistant', content: aiFullResponse })
+      saveHistory()
+      
+    } catch (error) {
+       if (error.name === 'AbortError') {
+          aiBubble.innerHTML += '<br><span class="text-zinc-500 text-xs italic mt-2">（已停止生成）</span>'
+          // 也把已經生成的殘缺內容保存進歷史
+          messageHistory.push({ role: 'assistant', content: aiBubble.innerText.replace('（已停止生成）', '') })
+          saveHistory()
+       } else {
+         console.error(error)
+         aiBubble.innerHTML = `<span class="text-red-400 font-bold">⚠️ 對話發生錯誤：${error.message}</span><br>請檢查網路環境或後端金鑰設定。`
+       }
+    } finally {
+      currentAbortController = null
+      setGenerating(false)
+      messagesContainer.scrollTop = messagesContainer.scrollHeight
+    }
+  })
+
+  // 初始化啟動
+  initChat()
+})
+</script>
+
+<style is:global>
+@keyframes custom-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.custom-spin {
+  animation: custom-spin 1s linear infinite;
+}
+
+@keyframes dot-pulse {
+  0%, 100% { opacity: 0.2; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+.dot-anim {
+  animation: dot-pulse 1.4s infinite ease-in-out both;
+}
+.dot-anim-1 { animation-delay: -0.32s; }
+.dot-anim-2 { animation-delay: -0.16s; }
+.dot-anim-3 { animation-delay: 0s; }
+
+/* 优雅的细滚动条 */
+#chat-messages::-webkit-scrollbar {
+  width: 6px;
+}
+#chat-messages::-webkit-scrollbar-track {
+  background: transparent;
+}
+#chat-messages::-webkit-scrollbar-thumb {
+  background-color: #27272a;
+  border-radius: 10px;
+}
+#chat-messages:hover::-webkit-scrollbar-thumb {
+  background-color: #3f3f46;
+}
+
+/* 覆盖 prose p 的底部间距，让聊天气泡看起来更紧凑流畅 */
+#chat-messages .prose p:last-child {
+  margin-bottom: 0;
+}
+#chat-messages .prose p:first-child {
+  margin-top: 0;
+}
+</style>

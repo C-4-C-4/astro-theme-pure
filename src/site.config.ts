@@ -55,6 +55,7 @@ export const theme: ThemeUserConfig = {
       { title: '專案', link: '/projects' },
       { title: '連結', link: '/links' },
       { title: '數據', link: '/analytics' },
+      { title: 'AI 對話', link: '/chat' },
       { title: '關於', link: '/about' }
     ]
   },
